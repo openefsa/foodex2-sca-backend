@@ -1,55 +1,51 @@
-# file used to clean the text from an external file and then save it
-from collections import Counter
-import gensim.parsing.preprocessing as pp
-import gensim.utils as utils
-import pickle
+# this file is used for cleaning a dataset retrived from a csv file
 
-# load the external file
-raw_documents = open('src/dataset/bt_dataset.txt').read().splitlines()
-
-# list in which to save the pre processed lines
-ppLines = []
-
-# method used for removing duplicate words from string
+import pandas as pd
+import string
 
 
-def unique_list(l):
-    ulist = []
-    [ulist.append(x) for x in l if x not in ulist]
-    return ulist
+''' IMPORT DATA '''
+# import the dataframe using pandas
+df = pd.read_csv('src/data/history_3.csv', low_memory=False)
+
+''' LOWER CASE '''
+df = df.apply(lambda x: x.astype(str).str.lower())
+
+''' REMOVE PUNCTATION '''
 
 
-for line in raw_documents:
+def remove_punctuation(text):
+    # replace punctation with single space
+    translator = str.maketrans(string.punctuation, ' '*len(string.punctuation))
+    # return the text with no punctation marks
+    return text.translate(translator)
 
-    # encode the line
-    line = utils.any2unicode(line, encoding='utf8', errors='strict')
 
-    # remove stop words
-    line = pp.remove_stopwords(line)
+# remove punctation from term name and term warning
+df['ENFOODNAME'] = df['ENFOODNAME'].apply(remove_punctuation)
 
-    # split numeric values
-    line = pp.split_alphanum(line)
+''' TRIM MULTI-SPACES '''
+# replace single chars with space
+# df['ENFOODNAME'].replace( {'\\s\\D\\s': ' '}, regex=True, inplace=True)
 
-    # stem tokens (commented since remove useful info for calculating the cosine distance)
-    # line = pp.stem_text(line)
+# replace multiple white spaces with single one
+df.replace({' +': ' '}, regex=True, inplace=True)
 
-    # strip multiple white spaces
-    line = pp.strip_multiple_whitespaces(line)
 
-    # strip only alphanum words (remove strange chars)
-    line = pp.strip_non_alphanum(line)
+''' STEMMING 
+# create an object of stemming function
+from nltk.stem.snowball import SnowballStemmer
+stemmer = SnowballStemmer("english")
 
-    # strip punctuation
-    line = pp.strip_punctuation(line)
+def stemming(text):
+    # function that stem each word given a text
+    text = [stemmer.stem(word) for word in text.split()]
+    return " ".join(text)
 
-    # strip words with length
-    line = pp.strip_short(line, minsize=1)
+# apply stemming to specified columns
+df['ENFOODNAME'] = df['ENFOODNAME'].apply(stemming)
+'''
 
-    # remove duplicates
-    line = ' '.join(unique_list(line.split()))
-
-    # append the pp line
-    ppLines.append(line)
-
-# pickle the file
-pickle.dump(dict(enumerate(ppLines)), open("src/dataset/pp_bt_dataset.pkl", "wb"))
+''' EXPORT THE DATAFRAME '''
+# export the df cleaned
+export_csv = df.to_csv(r'src/data/cleaned_history_3.csv', index=None)
