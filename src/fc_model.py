@@ -1,15 +1,17 @@
-from nltk.tokenize import word_tokenize
+import gensim.utils as utils
 
 from gensim.corpora import Dictionary
 from gensim.models import TfidfModel
 from gensim.similarities import SparseMatrixSimilarity
 
-# split raw doc by lines
-raw_documents = open('./src/dataset/pp_bt_dataset.txt').read().splitlines()
+import pandas as pd
+
+# load the external file
+df = pd.read_pickle('src/dataset/bt_cleaned.pkl')
 
 # tokenize each sentence using nltk
-gen_docs = [[w.lower() for w in word_tokenize(text)]
-            for text in raw_documents]
+gen_docs = [[w.lower() for w in utils.tokenize(text)]
+            for text in df]
 
 # build gensim dictionary (map word to number)
 dictionary = Dictionary(gen_docs)
@@ -34,7 +36,8 @@ tf_idf = TfidfModel(corpus)
 tf_idf.save('./src/model/baseterm.tfidf')
 
 # create similarity measure in tf-idf space
-index_sparse = SparseMatrixSimilarity(tf_idf[corpus], num_features=len(dictionary), num_best=10)
+index_sparse = SparseMatrixSimilarity(
+    tf_idf[corpus], num_features=len(dictionary), num_best=10)
 
 # print(sims)
 # print(type(sims))
