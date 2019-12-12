@@ -35,17 +35,17 @@ def getBaseterm():
     baseterm = ",".join(data['baseterm'])
     # pre process the inserted free text
     cleaned_desc = [clean_text(baseterm)]
-
     # vectorize the cleaned text with pre-built TfidfVectorizer (removes also stopwords)
     test_data_features = vectorizer.transform(cleaned_desc)
-
     # predict top best probabilities
     probs = ml_model.predict_proba(test_data_features)
+    # zip target class to affinity
+    result = zip(ml_model.classes_, probs[0])
     # sort descending and get top 10
-    results = sorted(zip(ml_model.classes_, probs[0]), key=lambda x: x[1], reverse=True)[:10]
-    print(results)
+    results = sorted(result, key=lambda x: x[1], reverse=True)[:10]
     # return as json
     return json.dumps(results)
+
 
 '''
 @app.route("/getFacets", methods=['POST'])
