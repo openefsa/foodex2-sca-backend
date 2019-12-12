@@ -4,6 +4,7 @@ from flask_cors import CORS
 from nltk import word_tokenize
 
 import pickle as pk
+import json
 
 # init Flask and enable Cross Origin Resource Sharing
 app = Flask(__name__)
@@ -31,7 +32,7 @@ def getBaseterm():
     # get the passed json file
     data = request.get_json()
     # if key doesnt exist return none
-    baseterm = data['baseterm']
+    baseterm = ",".join(data['baseterm'])
     # pre process the inserted free text
     cleaned_desc = [clean_text(baseterm)]
 
@@ -40,11 +41,11 @@ def getBaseterm():
 
     # predict top best probabilities
     probs = ml_model.predict_proba(test_data_features)
-
-    results = sorted(zip(ml_model.classes_, probs[0]), key=lambda x: x[1])[-10:]
-
+    # sort descending and get top 10
+    results = sorted(zip(ml_model.classes_, probs[0]), key=lambda x: x[1], reverse=True)[:10]
+    print(results)
     # return as json
-    return results.to_json()
+    return json.dumps(results)
 
 '''
 @app.route("/getFacets", methods=['POST'])
