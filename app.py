@@ -32,7 +32,7 @@ def getBaseterm():
     # get the passed json file
     data = request.get_json()
     # if key doesnt exist return none
-    baseterm = ",".join(data['baseterm'])
+    baseterm = data['baseterm']
     # pre process the inserted free text
     cleaned_desc = [clean_text(baseterm)]
     # vectorize the cleaned text with pre-built TfidfVectorizer (removes also stopwords)
@@ -40,11 +40,21 @@ def getBaseterm():
     # predict top best probabilities
     probs = ml_model.predict_proba(test_data_features)
     # zip target class to affinity
-    result = zip(ml_model.classes_, probs[0])
+    results = zip(ml_model.classes_, probs[0])
     # sort descending and get top 10
-    results = sorted(result, key=lambda x: x[1], reverse=True)[:10]
+    results = sorted(results, key=lambda x: x[1], reverse=True)[:10]
+
+    # create the json
+    baseterms = []
+    for item in results:
+        empDict = {
+            'name': item[0],
+            'affinity': item[1]
+        }
+        baseterms.append(empDict)
+    
     # return as json
-    return json.dumps(results)
+    return json.dumps(baseterms)
 
 
 '''
