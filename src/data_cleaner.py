@@ -6,10 +6,11 @@ import string
 
 ''' IMPORT DATA '''
 # import the dataframe using pandas
-df = pd.read_csv('src/data/history_3.csv', low_memory=False)
+df = pd.read_csv('src/data/history_4.csv', low_memory=False)
 
 ''' LOWER CASE '''
-df = df.apply(lambda x: x.astype(str).str.lower())
+df['ENFOODNAME'] = df['ENFOODNAME'].str.lower()
+# df = df.apply(lambda x: x.astype(str).str.lower())
 
 ''' REMOVE PUNCTATION '''
 
@@ -48,4 +49,4 @@ df['ENFOODNAME'] = df['ENFOODNAME'].apply(stemming)
 
 ''' EXPORT THE DATAFRAME '''
 # export the df cleaned
-export_csv = df.to_csv(r'src/data/cleaned_history_3.csv', index=None)
+export_csv = df.to_csv(r'src/data/cleaned_history_4.csv', index=None)
