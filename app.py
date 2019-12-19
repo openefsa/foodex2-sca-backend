@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # load the model from the external file
-ml_model = pk.load(open('src/model/bt_model.pkl', 'rb'))
+ml_model = pk.load(open('src/model/c_model.pkl', 'rb'))
 # load the vectorizer from the external file
 vectorizer = pk.load(open("src/model/vectorizer.pkl", "rb"))
 # load the mtx catalogue for retriving term name
