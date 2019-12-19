@@ -16,7 +16,7 @@ df.dropna(inplace=True)
 print("shape w/o nan: ", df.shape)
 
 # use 50% of the whole dataframe (random_state=1 used for reproducing the same sample)
-df = df.sample(frac=0.2)
+df = df.sample(frac=0.3)
 
 ''' DATA PREPARATION '''
 # get feature column
@@ -54,6 +54,28 @@ def train_model(features, label):
     # since it uses statistics from the complement of each class to compute the model’s weights
     from sklearn.naive_bayes import ComplementNB
     ml_model = ComplementNB()
+    start = 0
+    stop = 5000
+    step = 100
+    for num in range(start,stop,step):
+        nextIt = num+step
+        # ml_model.fit(features, label)
+        # partil_fit useful when dataset is too big to fit in memory at once
+        ml_model.partial_fit(features[num:nextIt], label[num:nextIt], classes=np.unique(label))
+
+    # print the model accuracy
+    score = ml_model.score(features, label) * 100
+    print('CNB Accuracy: %.0f%%' % score)
+
+    return ml_model
+
+def train_model_1(features, label):
+    print("Training the Complement Naive Bayes model...")
+    # CNB is an adaptation of the standard multinomial naive Bayes (MNB)
+    # it is particularly suited for imbalanced data sets
+    # since it uses statistics from the complement of each class to compute the model’s weights
+    from sklearn.naive_bayes import ComplementNB
+    ml_model = ComplementNB()
     # ml_model.fit(features, label)
     # partil_fit useful when dataset is too big to fit in memory at once
     ml_model.partial_fit(features, label, classes=np.unique(label))
@@ -69,9 +91,9 @@ ml_model = train_model(train_features, y_train)
 
 ''' SAVE MODEL '''
 # save the model on disk
-pk.dump(ml_model, open('src/model/bt_model.pkl', 'wb'))
+pk.dump(ml_model, open('src/model/c_model.pkl', 'wb'))
 
-''' TEST MODEL '''
+''' TEST MODEL 
 # vectorize the test data
 test_features = vectorizer.transform(X_test)
 
@@ -82,3 +104,4 @@ correctly_identified_y = predicted_y == y_test
 print("correctly identified ", correctly_identified_y)
 accuracy = np.mean(correctly_identified_y) * 100
 print('Test accuracy: %.0f%%' % accuracy)
+'''
