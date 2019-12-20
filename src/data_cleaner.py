@@ -11,6 +11,7 @@ df = pd.read_csv('src/data/history_4.csv', low_memory=False)
 ''' LOWER CASE '''
 df['ENFOODNAME'] = df['ENFOODNAME'].str.lower()
 # df = df.apply(lambda x: x.astype(str).str.lower())
+df['ENFOODNAME'] = df['ENFOODNAME'].fillna('')
 
 ''' REMOVE PUNCTATION '''
 
