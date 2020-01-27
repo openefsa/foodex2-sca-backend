@@ -3,3 +3,5 @@ node_modules/
 src/data/
 src/model/
 
+# ignore files
+settings.json
