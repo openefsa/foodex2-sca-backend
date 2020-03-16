@@ -1,10 +1,4 @@
-For Flask configuration:
-- install flask (pip install Flask)
-- install flask-cors (pip install -U flask-cors)
-
-Dependencies:
-- spacy (pip install -U spacy)
-- nltk (pip install -U nltk)
-
-Launch command:
-- launch app.py (python app.py)
+Flask==1.1.1
+Flask-cors==3.0.8
+Spacy==2.2.3
+NLTK==3.4.5
