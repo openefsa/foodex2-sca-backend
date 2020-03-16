@@ -7,7 +7,10 @@ import numpy as np
 
 ''' IMPORT DATA '''
 # import the dataframe using pandas
-df = pd.read_csv('src/data/cleaned_history_4.csv')
+df = pd.read_csv('src/data/bt_cleaned_history.csv')
+# df = df.sample(frac=0.1)
+
+print(df.shape)
 
 ''' DROP NANs '''
 # remove rows having nan values
@@ -19,7 +22,12 @@ print("shape w/o nan: ", df.shape)
 # get feature column
 X = df['ENFOODNAME']
 # get label column
-y = df['BASETERM_NAME']
+y = df['BASETERM_NAME_CODE']
+
+#This converts the Y column's values to numbers representing the baseterms
+#labelencoder_Y = LabelEncoder()
+#y = labelencoder_Y.fit_transform(y)
+
 # split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01)
 
@@ -34,7 +42,7 @@ def create_bow(X):
     # (convert to a NumPy array for easy handling)
     train_features = vectorizer.fit_transform(X)
     # pickle the vocabulary
-    pk.dump(vectorizer, open("src/model/vectorizer.pkl", "wb"))
+    pk.dump(vectorizer, open("src/model/bt_vectorizer.pkl", "wb"))
     # words in vocabulary
     # vocab = vectorizer.get_feature_names()
     return vectorizer, train_features
@@ -50,6 +58,7 @@ def train_model(features, label):
     # since it uses statistics from the complement of each class to compute the model’s weights
 
     print("Training the Complement Naive Bayes model...")
+    
     from sklearn.naive_bayes import ComplementNB
     ml_model = ComplementNB()
     # ml_model.fit(features, label)
@@ -58,6 +67,12 @@ def train_model(features, label):
     # print the model accuracy
     score = ml_model.score(features, label) * 100
     print('CNB Accuracy: %.0f%%'% score)
+    '''
+    from sklearn.neural_network import MLPClassifier
+    ml_model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+    
+    ml_model.fit(features, label)
+    '''
     return ml_model
 
 
@@ -68,7 +83,7 @@ ml_model = train_model(train_features, y_train)
 # save the model on disk
 pk.dump(ml_model, open('src/model/bt_model.pkl', 'wb'))
 
-''' TEST MODEL '''
+''' TEST MODEL 
 # vectorize the test data
 test_features = vectorizer.transform(X_test)
 
@@ -79,3 +94,4 @@ correctly_identified_y = predicted_y == y_test
 print("correctly identified ", correctly_identified_y)
 accuracy = np.mean(correctly_identified_y) * 100
 print('Test accuracy: %.0f%%' % accuracy)
+'''

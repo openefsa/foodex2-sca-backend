@@ -1,9 +1,12 @@
 from flask import Flask, request
 from flask_cors import CORS
 
-from nltk import word_tokenize
+import spacy
 
-import pickle as pk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import string
+
 import pandas as pd
 import json
 
@@ -11,101 +14,154 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-# load the model from the external file
-ml_model = pk.load(open('src/model/c_model.pkl', 'rb'))
-# load the vectorizer from the external file
-vectorizer = pk.load(open("src/model/vectorizer.pkl", "rb"))
-# load the mtx catalogue for retriving term name
-mtx = pd.read_csv('src/data/MTX_10.3.csv')
-#mtx = mtx.apply(lambda x: x.astype(str).str.lower())
-mtx.set_index('termCode', inplace=True)
+# it contains all possible models name
+global possibleModels
+possibleModels = []
+
+# deploy
+possibleModels = ["F" + "{:02}".format(i) for i in range(1, 34)]
+# remove not exsisting models (facet categories)
+possibleModels.remove("F05")
+possibleModels.remove("F13")
+possibleModels.remove("F14")
+possibleModels.remove("F15")
+possibleModels.remove("F16")
+possibleModels.remove("F29")
+possibleModels.remove("F30")
+
+# add baseterm
+possibleModels.append("baseterm")
+
+# add facets
+possibleModels.append("ifFacet")
+
+'''
+# add facet categories
+possibleModels.append("F02")  # source
+possibleModels.append("F04")  # ingredients
+possibleModels.append("F10")  # qualitative info
+possibleModels.append("F19")  # packaging-material
+possibleModels.append("F22")  # preparation production place
+possibleModels.append("F27")  # racsource
+possibleModels.append("F28")  # process
+'''
+
+# load the models from the external file
+global models
+models = {}
+for modelName in possibleModels:
+    models[modelName] = spacy.load("src/delaware_models/"+modelName)
+
+# fc_model = spacy.load("../")
+# fc01_model = spacy.load("../")
+# fcn_model = spacy.load("../")
+# fc33_model = spacy.load("../")
+
+# remove punctuation, stop words and not
+punctuation = list(string.punctuation)
+stopWords = set(stopwords.words('english'))
+
+# load mtx and facet grous for retriving name given code
+mtx = pd.read_csv('src/data/MTX_10.3.csv').set_index('code')
+categories = pd.read_csv('src/data/facet_categories.csv').set_index('code')
+
 
 def clean_text(raw_text):
     # 1) Convert to lower case and Tokenize
     tokens = word_tokenize(raw_text.lower())
-    # 2) Keep only words (removes punctuation and numbers)
-    tokens = [w for w in tokens if w.isalpha()]
-    # 3) Stemming
-    # tokens = [stemming.stem(w) for w in token_words]
+    # 2) remove stop words
+    tokens = [w for w in tokens if w not in stopWords]
+    # 3) remove punctuation
+    tokens = [w for w in tokens if w not in punctuation]
     # Return cleaned text
     return " ".join(tokens)
 
 
-def interpretCode(code):
-    # interpret the foodex2 code
-    # split the code between bt and facets
-    codes = code.split('#')
-    # if there are facets
-    if(len(codes) > 1):
-        # get the baseterm name
-        name =  mtx.loc[codes[0],'termExtendedName']
-        # analyse the facets
-        if(codes[1]):
-            # split the facets by '$'
-            facets = codes[1].split('$')
-            # for each facet
-            for facet in facets:
-                # fplit the facet between group of appartenence and code
-                comp = facet.split('.')
-                # componet the group with the name of the facet
-                name += ";" + comp[0] + ":"+mtx.loc[comp[1],'termExtendedName']
-    else:
-        # get the baseterm name from the list of terms
-        name = mtx.loc[codes[-1],'termExtendedName']
-    
-    return name
+def getCategory(text, nlp):
+    # return the classes found in the requested model
+    doc = models[nlp](text)
+    return doc.cats
 
 
-def create_json(results):
-    # build json for each suggetsed list
-    items = []
-    for item in results:
-        code = item[0]
-        name = interpretCode(code)
-        empDict = {
-            'code': code,
-            'name': name,
-            'affinity': item[1]
-        }
-        items.append(empDict)
+def getTop(text, nlp, topN):
+    # for each class create the tuple <classCode, classProb>
+    tuples = getCategory(text, nlp)
 
-    return items
+    # sort in decreasing order
+    tuples = sorted(
+        tuples.items(), key=lambda item: item[1], reverse=True)[:topN]
+
+    # chose from which library to get the name
+    lib = mtx if nlp != "ifFacet" else categories
+
+    # return topN tuples as list
+    predictions = {}
+    for k, v in tuples:
+        # take only those above threshold
+        #if v >= 0.1:
+            name = lib.loc[k].values[0]
+            predictions[k] = {"name": name, "acc": v}
+
+    return predictions
 
 
-@app.route("/getCode", methods=['POST'])
-def getCode():
-    # get the passed json file
-    data = request.get_json()
-    # if key doesnt exist return none
-    free_text = data['user_text']
+@app.route("/predict", methods=["GET"])
+def predict():
+    '''
+    @shahaal
+    flask API service which return the results given from the model specified in input
+    '''
+    # get from request the given free text by key
+    text = request.args.get("text")
+    # get from request the requested model to activate
+    model = request.args.get("model")
+
+    # if the requested model is not available
+    if model not in possibleModels:
+        return
+
     # pre process the inserted free text
-    cleaned_desc = [clean_text(free_text)]
-    # vectorize the cleaned text with pre-built TfidfVectorizer (removes also stopwords)
-    test_data_features = vectorizer.transform(cleaned_desc)
-    # predict top best probabilities
-    probs = ml_model.predict_proba(test_data_features)
-    # zip target class to affinity
-    results = zip(ml_model.classes_, probs[0])
-    # sort descending and get top 10
-    results = sorted(results, key=lambda x: x[1], reverse=True)[:10]
-    # create the json
-    codes = create_json(results)
-    print(json.dumps(codes))
+    text = clean_text(text)
+
+    # get top predictions sorted by prob
+    res = {model: getTop(text, model, 5)}
+    print(res)
+
     # return as json
-    return json.dumps(codes)
+    return json.dumps(res)
 
 
-'''
-@app.route("/getFacets", methods=['POST'])
-def getFacets():
-    # get the passed json file
-    data = request.get_json()
+@app.route("/predictAll", methods=["GET"])
+def predictAll():
+    '''
+    @shahaal
+    flask API service which return the results of all models by passing the given free text
+    '''
+    # get from request the given free text by key
+    text = request.args.get("text")
 
-    # retrieve the selected baseterm index
-    btIndex = int(data['btIndex'])
+    # pre process the inserted free text
+    text = clean_text(text)
 
-    return ""
-'''
+    # predict possible baseterms
+    basetermResults = {"baseterm": getTop(text, 'baseterm', 5)}
+    print(basetermResults)
+
+    # predict possible facet categories
+    ifFacetResults = getTop(text, 'ifFacet', 5)
+    print(ifFacetResults)
+
+    # for each predicted facet category
+    for key in ifFacetResults:
+        print(key, '->', ifFacetResults[key])
+        # append the list of predicted facets
+        ifFacetResults[key]['facets'] = getTop(text, key, 5)
+
+    ifFacetResults = {"facets": ifFacetResults}
+
+    # Merge the dicts as json
+    return json.dumps([basetermResults, ifFacetResults])
+
 
 if __name__ == "__main__":
     app.run(debug=True)

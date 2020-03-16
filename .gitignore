@@ -2,4 +2,7 @@
 node_modules/
 src/data/
 src/model/
+src/delaware_models
 
+# ignore files
+settings.json
