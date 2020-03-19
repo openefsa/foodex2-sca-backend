@@ -19,7 +19,8 @@ global possibleModels
 possibleModels = []
 
 # deploy
-#possibleModels = ["F" + "{:02}".format(i) for i in range(1, 34)]
+# max 34
+possibleModels = ["F" + "{:02}".format(i) for i in range(1, 2)]
 # remove not exsisting models (facet categories)
 #possibleModels.remove("F05")
 #possibleModels.remove("F13")
@@ -29,7 +30,7 @@ possibleModels = []
 #possibleModels.remove("F29")
 #possibleModels.remove("F30")
 
-possibleModels.append("F01")
+#possibleModels.append("F01")
 
 
 # add baseterm
@@ -66,8 +67,8 @@ punctuation = list(string.punctuation)
 stopWords = set(stopwords.words('english'))
 
 # load mtx and facet grous for retriving name given code
-#mtx = pd.read_csv('src/data/MTX_10.3.csv').set_index('code')
-#categories = pd.read_csv('src/data/facet_categories.csv').set_index('code')
+mtx = pd.read_csv('src/data/MTX_10.3.csv').set_index('code')
+categories = pd.read_csv('src/data/facet_categories.csv').set_index('code')
 
 
 def clean_text(raw_text):
