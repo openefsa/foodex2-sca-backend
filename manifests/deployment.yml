@@ -11,14 +11,14 @@ spec:
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend 
-          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend:v2
+          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend:v3
           ports:
           - containerPort: 5000
           resources:
             requests:
-              memory: "4Gi"
+              memory: "32Gi"
               cpu: "250m"
             limits:
-              memory: "6Gi"
+              memory: "40Gi"
               cpu: "500m"
             

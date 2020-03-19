@@ -20,17 +20,16 @@ possibleModels = []
 
 # deploy
 # max 34
-possibleModels = ["F" + "{:02}".format(i) for i in range(1, 2)]
+possibleModels = ["F" + "{:02}".format(i) for i in range(1, 34)]
 # remove not exsisting models (facet categories)
-#possibleModels.remove("F05")
-#possibleModels.remove("F13")
-#possibleModels.remove("F14")
-#possibleModels.remove("F15")
-#possibleModels.remove("F16")
-#possibleModels.remove("F29")
-#possibleModels.remove("F30")
+possibleModels.remove("F05")
+possibleModels.remove("F13")
+possibleModels.remove("F14")
+possibleModels.remove("F15")
+possibleModels.remove("F16")
+possibleModels.remove("F29")
+possibleModels.remove("F30")
 
-#possibleModels.append("F01")
 
 
 # add baseterm
