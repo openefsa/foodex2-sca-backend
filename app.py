@@ -19,15 +19,18 @@ global possibleModels
 possibleModels = []
 
 # deploy
-possibleModels = ["F" + "{:02}".format(i) for i in range(1, 34)]
+#possibleModels = ["F" + "{:02}".format(i) for i in range(1, 34)]
 # remove not exsisting models (facet categories)
-possibleModels.remove("F05")
-possibleModels.remove("F13")
-possibleModels.remove("F14")
-possibleModels.remove("F15")
-possibleModels.remove("F16")
-possibleModels.remove("F29")
-possibleModels.remove("F30")
+#possibleModels.remove("F05")
+#possibleModels.remove("F13")
+#possibleModels.remove("F14")
+#possibleModels.remove("F15")
+#possibleModels.remove("F16")
+#possibleModels.remove("F29")
+#possibleModels.remove("F30")
+
+possibleModels.append("F01")
+
 
 # add baseterm
 possibleModels.append("baseterm")
@@ -50,6 +53,7 @@ possibleModels.append("F28")  # process
 global models
 models = {}
 for modelName in possibleModels:
+    print("loadModel: "+modelName)
     models[modelName] = spacy.load("src/delaware_models/"+modelName)
 
 # fc_model = spacy.load("../")
@@ -62,8 +66,8 @@ punctuation = list(string.punctuation)
 stopWords = set(stopwords.words('english'))
 
 # load mtx and facet grous for retriving name given code
-mtx = pd.read_csv('src/data/MTX_10.3.csv').set_index('code')
-categories = pd.read_csv('src/data/facet_categories.csv').set_index('code')
+#mtx = pd.read_csv('src/data/MTX_10.3.csv').set_index('code')
+#categories = pd.read_csv('src/data/facet_categories.csv').set_index('code')
 
 
 def clean_text(raw_text):
@@ -164,4 +168,4 @@ def predictAll():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
