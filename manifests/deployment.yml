@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend 
-          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend:v3
+          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend:v4
           ports:
           - containerPort: 5000
           resources:

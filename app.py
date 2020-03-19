@@ -53,7 +53,7 @@ possibleModels.append("F28")  # process
 global models
 models = {}
 for modelName in possibleModels:
-    print("loadModel: "+modelName)
+    print("loadModel: "+modelName,flush=True)
     models[modelName] = spacy.load("src/delaware_models/"+modelName)
 
 # fc_model = spacy.load("../")
