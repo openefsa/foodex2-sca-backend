@@ -1,6 +1,5 @@
 # ignore folder named 'node_modules'
 node_modules/
-src/data/
 src/model/
 src/delaware_models
 
