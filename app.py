@@ -54,7 +54,7 @@ global models
 models = {}
 for modelName in possibleModels:
     print("loadModel: "+modelName,flush=True)
-    models[modelName] = spacy.load("src/delaware_models/"+modelName)
+    models[modelName] = spacy.load("/work-dir/foodex2PreditionDeployed/"+modelName)
 
 # fc_model = spacy.load("../")
 # fc01_model = spacy.load("../")

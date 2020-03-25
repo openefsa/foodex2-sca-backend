@@ -11,7 +11,10 @@ spec:
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend 
-          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend:v4
+          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+          volumeMounts:
+           - name: workdir
+             mountPath: "/work-dir"
           ports:
           - containerPort: 5000
           resources:
@@ -21,4 +24,23 @@ spec:
             limits:
               memory: "40Gi"
               cpu: "500m"
-            
+      initContainers:
+      - name: download-models
+        image: curlimages/curl
+        command:
+        - curl
+        - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed.zip
+        - "-o"
+        - "/work-dir/foodex2PreditionDeployed.zip"  
+        volumeMounts:
+           - name: workdir
+             mountPath: "/work-dir"
+      - name: unzip-models
+        image: curlimages/curl
+        command: ["unzip", "/work-dir/foodex2PreditionDeployed.zip", "-d", "/work-dir"]
+        volumeMounts:
+           - name: workdir
+             mountPath: "/work-dir"
+      volumes:
+        - name: workdir
+          emptyDir: {}       
