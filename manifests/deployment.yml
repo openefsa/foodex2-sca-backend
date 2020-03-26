@@ -9,6 +9,7 @@ spec:
       labels:
         app: openefsafoodexwebcomponentbackend 
     spec:
+      progressDeadlineSeconds: 900
       containers:
         - name: openefsafoodexwebcomponentbackend 
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
