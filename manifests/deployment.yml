@@ -3,13 +3,13 @@ kind: Deployment
 metadata:
   name: openefsafoodexwebcomponentbackend 
 spec:
+  progressDeadlineSeconds: 900
   replicas: 1
   template:
     metadata:
       labels:
         app: openefsafoodexwebcomponentbackend 
     spec:
-      progressDeadlineSeconds: 900
       containers:
         - name: openefsafoodexwebcomponentbackend 
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
