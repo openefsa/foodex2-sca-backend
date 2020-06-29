@@ -7,8 +7,8 @@ RUN apt-get update -y && \
 RUN mkdir -p /app/src/delaware_models
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
-RUN python -c "import nltk;nltk.download('stopwords')"
-RUN python -c "import nltk;nltk.download('punkt')"
+# RUN python -c "import nltk;nltk.download('stopwords')"
+# RUN python -c "import nltk;nltk.download('punkt')"
 
 WORKDIR /app
 COPY . /app

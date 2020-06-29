@@ -3,9 +3,9 @@
 ###
 # *********************************************************************
 # |                                                                    
-# | File: \app.py
+# | File: \__init__.py
 # | Description: <<desc here>>
-# | Project: foodex_sca_backend
+# | Project: api
 # | Created Date: 19th May 2020
 # | Author: Alban Shahaj (shahaal)
 # | Email: data.collection@efsa.europa.eu
@@ -19,23 +19,9 @@
 ###
 
 
-from flask import Flask
-from flask_cors import CORS
+from flask import Blueprint
 
+api = Blueprint('api', __name__, template_folder='templates')
 
-def main():
-    # instantiate flask app
-    app = Flask(__name__)
-    # set app configuration from external file
-    app.config.from_object("config.ProductionConfig")
-    CORS(app)
-    # register api blueprint to flask app
-    from api import api as api_blueprint
-    app.register_blueprint(api_blueprint)
-
-    # run flask app
-    app.run(debug=True)
-    
-
-if __name__ == "__main__":
-    main()
+# private and public apis must be imported after Blueprint initialisation
+from . import private, public

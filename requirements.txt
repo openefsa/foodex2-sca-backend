@@ -1,5 +1,9 @@
-Flask==1.1.1
-Flask-cors==3.0.8
-Spacy==2.2.3
-NLTK==3.4.5
-pandas==1.0.2
+Spacy==2.3
+NLTK==3.5
+pandas==1.0.3
+click==6.7
+Flask==1.1.2
+Flask-Cors==3.0.8
+xlrd==1.2.0
+email-validator==1.1.1
+azure-cosmosdb-table==1.0.6

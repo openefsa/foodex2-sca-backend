@@ -1,7 +1,6 @@
 # ignore folder named 'node_modules'
-node_modules/
-src/model/
-src/delaware_models
+api/asset/
+venv/
 
 # ignore files
-settings.json
+config.py
