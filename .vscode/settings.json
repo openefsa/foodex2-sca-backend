@@ -1,7 +1,0 @@
-{
-    "python.pythonPath": "d:\\Projects\\vs_workspace\\foodex-web-component-backend\\venv\\Scripts\\python.exe",
-    "python.formatting.provider": "autopep8",
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
-}

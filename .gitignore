@@ -1,6 +1,8 @@
 # ignore folder named 'node_modules'
 api/asset/
 venv/
+__pycache__/
+.vscode/
 
 # ignore files
 config.py
