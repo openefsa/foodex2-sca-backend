@@ -36,7 +36,6 @@ models_path = rootPath + "models/"
 
 # it contains all possible models name
 global possibleModels
-'''
 # add baseterm and ifFacet
 possibleModels = ["BT", "CAT"]
 # create list facets
@@ -44,9 +43,9 @@ possibleModels.extend([
     "F" + "{:02}".format(i) for i in range(1, 34)
     if i not in [5, 13, 14, 15, 16, 29, 30]
 ])
-'''
+
 # TODO only debug
-possibleModels = ["BT", "CAT", "F04", "F10", "F28"]
+# possibleModels = ["BT"]
 
 # load the models from the external file
 global models
