@@ -34,7 +34,7 @@ def main():
     app.register_blueprint(api_blueprint)
 
     # run flask app
-    app.run(debug=True)
+    app.run(debug=False)
     
 
 if __name__ == "__main__":
