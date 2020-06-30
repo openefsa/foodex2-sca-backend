@@ -23,19 +23,17 @@ from flask import Flask
 from flask_cors import CORS
 
 
-def main():
-    # instantiate flask app
-    app = Flask(__name__)
-    # set app configuration from external file
-    app.config.from_object("config.ProductionConfig")
-    CORS(app)
-    # register api blueprint to flask app
-    from api import api as api_blueprint
-    app.register_blueprint(api_blueprint)
+# instantiate flask app
+app = Flask(__name__)
+# set app configuration from external file
+app.config.from_object("config.ProductionConfig")
+CORS(app)
+# register api blueprint to flask app
+from api import api as api_blueprint
+app.register_blueprint(api_blueprint)
 
-    # run flask app
-    app.run(debug=False)
     
 
 if __name__ == "__main__":
-    main()
+    # run flask app
+    app.run(debug=False)
