@@ -5,6 +5,3 @@ __pycache__/
 .vscode/
 doc/
 manifests/secrets.yml
-
-# ignore files
-config.py
