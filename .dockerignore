@@ -1,0 +1,10 @@
+# ignore folders
+api/asset/models
+__pycache__/
+.vscode/
+venv/
+manifests/
+
+# only debug
+# api/asset/models/*
+# !api/asset/models/BT
