@@ -16,8 +16,6 @@ spec:
           volumeMounts:
            - name: workdir
              mountPath: "/work-dir"
-          ports:
-          - containerPort: 5000
           resources:
             requests:
               memory: "32Gi"
@@ -25,6 +23,29 @@ spec:
             limits:
               memory: "40Gi"
               cpu: "500m"
+          ports:
+          - containerPort: 5000
+          env:
+          - name: ACCOUNT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: flaskapi-secrets
+                key: BLOB_STORAGE_ACCOUNT_NAME
+          - name: ACCOUNT_KEY
+            valueFrom:
+              secretKeyRef:
+                name: flaskapi-secrets
+                key: BLOB_STORAGE_ACCOUNT_KEY
+          - name: TABLE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: flaskapi-secrets
+                key: BLOB_STORAGE_TABLE_NAME
+          - name: SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: flaskapi-secrets
+                key: FEEDBACK_API_SECRET_KEY
       initContainers:
       - name: download-models
         image: curlimages/curl
