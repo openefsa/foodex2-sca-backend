@@ -49,8 +49,6 @@ def authorisation_required(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        key = None
-
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
             # enable feedbacks if status code ok
