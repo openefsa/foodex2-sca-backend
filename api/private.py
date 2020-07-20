@@ -26,35 +26,20 @@ from . import api
 from functools import wraps
 import datetime
 import json
+import os
 
 # import azure table service
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
 
-from kubernetes import client, config
-
-# load k8s configuration
-try:
-    config.load_incluster_config()
-except config.ConfigException:
-    try:
-        config.load_kube_config()
-    except config.ConfigException:
-        raise Exception("Could not configure kubernetes python client")
-
-v1 = client.CoreV1Api()
-# pull secrets from cred in deafult namespace
-secret = v1.read_namespaced_secret("creds", "default")
-print(secret)
-
 # initiate the table service
 table_service = TableService(
-    account_name=secret.BLOB_STORAGE_ACCOUNT_NAME,
-    account_key=secret.BLOB_STORAGE_ACCOUNT_KEY
+    account_name=os.environ['ACCOUNT_NAME'],
+    account_key=os.environ['ACCOUNT_KEY']
 )
 
 # if the table does not exsits than create it
-tableName = secret.AZURE_TABLE_NAME
+tableName = os.environ['TABLE_NAME']
 if not table_service.exists(tableName):
     table_service.create_table(tableName)
 
@@ -69,7 +54,7 @@ def authorisation_required(f):
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
             # enable feedbacks if status code ok
-            enable_feedbacks = (token == secret.FEEDBACK_API_SECRET_KEY)
+            enable_feedbacks = (token == os.environ['SECRET_KEY'])
 
         return f(enable_feedbacks, *args, **kwargs)
 
