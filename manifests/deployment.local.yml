@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openefsafoodex2scabackend
+spec:
+  progressDeadlineSeconds: 900
+  selector:
+    matchLabels:
+      app: openefsafoodex2scabackend
+  template:
+    metadata:
+      labels:
+        app: openefsafoodex2scabackend
+    spec:
+      containers:
+      - name: openefsafoodex2scabackend
+        image: foodex2sca:backend # efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+        imagePullPolicy: Never
+        resources:
+          requests:
+            memory: "8Gi" # "32Gi"
+            cpu: "250m"
+          limits:
+            memory: "16Gi" # "40Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openefsafoodex2scabackendservice
+spec:
+  selector:
+    app: openefsafoodex2scabackend
+  ports:
+  - port: 5000
+  type: LoadBalancer
+
