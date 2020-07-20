@@ -31,11 +31,14 @@ import re
 
 
 rootPath = "api/asset/"
-# "/work-dir/foodex2PreditionDeployed/"
-models_path = rootPath + "models/"
+# for production
+models_path = "/work-dir/foodex2PreditionDeployed/"
+# TODO only debug
+# models_path = rootPath + "models/"
 
 # it contains all possible models name
 global possibleModels
+
 # add baseterm and ifFacet
 possibleModels = ["BT", "CAT"]
 # create list facets
