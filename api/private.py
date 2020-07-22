@@ -32,6 +32,14 @@ import os
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
 
+# TODO only debug
+'''
+os.environ["ACCOUNT_NAME"] = "account_name"
+os.environ["ACCOUNT_KEY"] = "account_key"
+os.environ["TABLE_NAME"] = "table_name"
+os.environ["SECRET_KEY"] = "secret_key"
+'''
+
 # initiate the table service
 table_service = TableService(
     account_name=os.environ['ACCOUNT_NAME'],

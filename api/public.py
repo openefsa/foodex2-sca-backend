@@ -48,7 +48,7 @@ possibleModels.extend([
 ])
 
 # TODO only debug
-# possibleModels = ["BT"]
+# possibleModels = ["BT", "CAT", "F02", "F04", "F06", "F10", "F27", "F28"]
 
 # load the models from the external file
 global models
