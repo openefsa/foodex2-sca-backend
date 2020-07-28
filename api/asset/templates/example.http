@@ -1,4 +1,4 @@
-### predict api
+### predict from specific model
 
 GET http://127.0.0.1:5000/predict HTTP/1.1
 content-type: application/json
@@ -8,9 +8,18 @@ content-type: application/json
     "model":"bt",
     "threshold": "0.1"
 }
+### predict from all models
+
+GET http://127.0.0.1:5000/predictAll HTTP/1.1
+content-type: application/json
+
+{
+    "text":"white chocolate",
+    "threshold": "0.1"
+}
 
 
-### feedback to azure api
+### post feedback to azure table
 
 POST http://127.0.0.1:5000/postFeedback HTTP/1.1
 Content-Type: "application/json"
@@ -19,14 +28,5 @@ x-access-token: mysecretkey
 {
     "desc": "hazelnuts",
     "code": "A034L"
-}
-
-### authorise to private api
-POST https://openapi.efsa.europa.eu/api/catalogues/catalogue-group-list HTTP/1.1
-Content-Type: "application/json"
-Ocp-Apim-Subscription-Key: mytoken
-
-{     
-   "getCatalogueGroupList": "" 
 }
 
