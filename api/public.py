@@ -59,7 +59,7 @@ for modelName in possibleModels:
 
 
 # remove punctuation, stop words and not
-punctuation = r"[!()\-[\]{};:'\"\\,<>./?@#$^&*_~=’+°]"
+punctuation = r"[!()\-[\]{};:‘“”ªˆ©¤€÷×–¿•…´`'\"\\,<>./?@#$^&*_~=’+°]"
 # read custom stop words list
 stopWords = []
 with open(rootPath+'data/stop_words.csv', 'r') as f:
@@ -82,6 +82,11 @@ def filterDuplicates(tokens):
     return sorted(set(tokens), key=tokens.index)
 """
 
+def filterDuplicates(tokens):
+    ''' filter duplicated words maintaining the order '''
+
+    return sorted(set(tokens), key=tokens.index)
+
 
 def cleanText(x):
     ''' method used fro cleaning text given in input '''
@@ -92,6 +97,10 @@ def cleanText(x):
     cleanStr = re.sub(punctuation, " ", cleanStr)
     # tokenization
     tokens = word_tokenize(cleanStr)
+
+    # remove duplicates
+    tokens = filterDuplicates(tokens)
+
     # remove duplicates
     # tokens = filterDuplicates(tokens)
     # remove stop words
