@@ -8,11 +8,11 @@ spec:
   replicas: 1
   selector:
      matchLabels:
-       name: openefsafoodexwebcomponentbackend
+       app: openefsafoodexwebcomponentbackend
   template:
     metadata:
       labels:
-        name: openefsafoodexwebcomponentbackend 
+        app: openefsafoodexwebcomponentbackend 
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend 
