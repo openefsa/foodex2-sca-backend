@@ -1,10 +1,14 @@
 apiVersion : apps/v1
 kind: Deployment
 metadata:
-  name: openefsafoodexwebcomponentbackend 
+  name: openefsafoodexwebcomponentbackend
+  
 spec:
   progressDeadlineSeconds: 900
   replicas: 1
+  selector:
+     matchLabels:
+       name: openefsafoodexwebcomponentbackend
   template:
     metadata:
       labels:
