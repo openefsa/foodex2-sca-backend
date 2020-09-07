@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app: openefsafoodexwebcomponentbackend 
+        name: openefsafoodexwebcomponentbackend 
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend 
