@@ -32,7 +32,7 @@ import re
 
 rootPath = "api/asset/"
 # for production
-models_path = "/work-dir/foodex2PreditionDeployed/"
+models_path = "/work-dir/"
 # TODO only debug
 # models_path = rootPath + "models/"
 
