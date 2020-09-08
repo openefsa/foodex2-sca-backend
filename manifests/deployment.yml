@@ -70,3 +70,15 @@ spec:
       volumes:
         - name: workdir
           emptyDir: {}       
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openefsafoodexwebcomponentbackendservice
+spec:
+  selector:
+    app: openefsafoodexwebcomponentbackend
+  ports:
+  - port: 5000
+  type: LoadBalancer
