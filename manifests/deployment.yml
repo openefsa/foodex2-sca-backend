@@ -55,7 +55,7 @@ spec:
         image: curlimages/curl
         command:
         - curl
-        - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed.zip
+        - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v4.zip
         - "-o"
         - "/work-dir/foodex2PreditionDeployed.zip"  
         volumeMounts:
