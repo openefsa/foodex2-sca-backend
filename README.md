@@ -13,7 +13,7 @@ The FoodEx2 Smart Coding Application is designed and developed internally in the
 
 ## For Developers
 ### Prerequisites
-* [Python] (https://www.python.org/downloads/)
+* [Python](https://www.python.org/downloads/)
 
 ## Clone and install
 Clone the project locally in your workspace using the following command:
