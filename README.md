@@ -38,9 +38,13 @@ Now the APIs can be reached from the url shown by appending to it the specific A
 The FoodEx2 SCA back-end project allows to obtain a series of FoodEx2 suggestions starting from the description of the food given in input. This is made possible thanks to [Spacy](https://spacy.io/) text classification models. More precisely, we have initiated different Spacy [en_core_web_md](https://spacy.io/models/en#en_core_web_md) models, each specific for its role (check the [wiki](wiki) for additional information), which have been then trained using the historical data collected by EFSA. In the current version of the FoodEx2 SCA back-end, the data collected in consumption has been used.
 
 ### Data preparation
+## section under review!
 
 ## Deployment
+## section under review!
 
 ### Docker build
+## section under review!
 
 ### Kubernates deployment
+## section under review!
