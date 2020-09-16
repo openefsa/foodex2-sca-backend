@@ -35,16 +35,29 @@ python app.py
 Now the APIs can be reached from the url shown by appending to it the specific API name of interest (e.g. https://localhost/predictAll).
 
 ## Models
-The FoodEx2 SCA back-end project allows to obtain a series of FoodEx2 suggestions starting from the description of the food given in input. This is made possible thanks to [Spacy](https://spacy.io/) text classification models. More precisely, we have initiated different Spacy [en_core_web_md](https://spacy.io/models/en#en_core_web_md) models, each specific for its role (check the [wiki](wiki) for additional information), which have been then trained using the historical data collected by EFSA. In the current version of the FoodEx2 SCA back-end, the data collected in consumption has been used.
-
-### Data preparation
-## section under review!
+The FoodEx2 SCA back-end project allows to obtain a series of FoodEx2 suggestions starting from the description of the food given in input. This is possible thanks to [Spacy](https://spacy.io/) text classification models. More precisely, we have initiated different Spacy [en_core_web_md](https://spacy.io/models/en#en_core_web_md) models, each specific for its role (check the [wiki](wiki) for additional information), which have been then trained using the historical data collected by EFSA. In the current version of the FoodEx2 SCA back-end, the data collected in consumption has been used.
 
 ## Deployment
-## section under review!
+The following section describes how to deploy the FoodEx2 Smart Coding Application's back-end locally.
 
 ### Docker build
-## section under review!
+Install [Docker](https://docs.docker.com/get-docker/) and configure it on your local computer. From the main folder of the foodex2-sca-backend project run the following command:
+```
+docker build -t name:tag
+```
+
+This command will use the **DOCKERFILE**, present in the main folder, for creating the docker image. Check if the docker image is present by launching the following command:
+```
+docker images
+```
+
+After making sure that the docker image has been correcly created, run it with the following command:
+```
+docker run name:tag
+```
 
 ### Kubernates deployment
-## section under review!
+Deploy the docker image created on kubernates by using the files present under the *"/manifest"* folder by running the following command:
+```
+kubectl deploy -f create ./manifest/deployment.yml
+```
