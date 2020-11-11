@@ -18,28 +18,22 @@
 # *********************************************************************
 ###
 
-
-from . import api
-from flask import request
+from . import api, c
 
 from nltk.tokenize import word_tokenize
-import spacy
-
-import pandas as pd
-import json
-import re
+from flask import request
+import spacy, json, re
 
 
 rootPath = "api/asset/"
 # for production
-models_path = "/work-dir/"
+# models_path = "/work-dir/"
 # TODO only debug
-# models_path = rootPath + "models/"
+models_path = rootPath + "models/"
 
-# it contains all possible models name
+# initialise all possible models name
 global possibleModels
 
-# add baseterm and ifFacet
 possibleModels = ["BT", "CAT"]
 # create list facets
 possibleModels.extend([
@@ -47,8 +41,10 @@ possibleModels.extend([
     if i not in [5, 13, 14, 15, 16, 29, 30]
 ])
 
+'''
 # TODO only debug
-# possibleModels = ["BT", "CAT", "F02", "F04", "F06", "F10", "F27", "F28"]
+possibleModels = ["BT", "CAT", "F03"] #, "F04", "F10", "F22", "F26", "F28"]
+'''
 
 # load the models from the external file
 global models
@@ -65,14 +61,9 @@ stopWords = []
 with open(rootPath+'data/stop_words.csv', 'r') as f:
     stopWords = f.read().split('\n')
 
-# load mtx terms and categories
-xlsx = pd.ExcelFile(rootPath+'data/MTX_11.2.xlsx')
-terms_data = pd.read_excel(xlsx, 'term')
-cats_data = pd.read_excel(xlsx, 'attribute')
-mtx_categories = pd.DataFrame(
-    cats_data, columns=['code', 'label']).set_index('code')
-mtx_terms = pd.DataFrame(terms_data, columns=[
-                         'termCode', 'termExtendedName']).set_index('termCode')
+# create queries
+query_terms = "SELECT * FROM terms WHERE termCode IN (%s) LIMIT 100"
+query_attrs = "SELECT * FROM attributes WHERE code IN (%s) LIMIT 100"
 
 
 """
@@ -82,24 +73,24 @@ def filterDuplicates(tokens):
     return sorted(set(tokens), key=tokens.index)
 """
 
-def filterDuplicates(tokens):
+def filter_duplicates(tokens):
     ''' filter duplicated words maintaining the order '''
 
     return sorted(set(tokens), key=tokens.index)
 
 
-def cleanText(x):
+def clean_text(x):
     ''' method used fro cleaning text given in input '''
 
     # all lower case
-    cleanStr = x.lower()
+    clean_str = x.lower()
     # remove punctuation
-    cleanStr = re.sub(punctuation, " ", cleanStr)
+    clean_str = re.sub(punctuation, " ", clean_str)
     # tokenization
-    tokens = word_tokenize(cleanStr)
+    tokens = word_tokenize(clean_str)
 
     # remove duplicates
-    tokens = filterDuplicates(tokens)
+    tokens = filter_duplicates(tokens)
 
     # remove duplicates
     # tokens = filterDuplicates(tokens)
@@ -110,32 +101,47 @@ def cleanText(x):
     # normalizedStr = normalise(cleanStr, verbose=False)
 
     # trim multiple white spaces
-    cleanStr = ' '.join(tokens)
+    clean_str = ' '.join(tokens)
 
-    return cleanStr
+    return clean_str
 
 
-def getTop(text, nlp, t):
+def get_top(text, nlp, t):
     global models
     # for each class create the tuple <classCode, classProb>
     tuples = models[nlp](text).cats
 
-    # sort in decreasing order
+    # sort in decreasing order and keep only first 100
     tuples = sorted(
-        tuples.items(), key=lambda item: item[1], reverse=True)
+        tuples.items(), key=lambda item: item[1], reverse=True)[:100]
 
     # chose from which library to get the name
-    lib = mtx_terms if nlp != "CAT" else mtx_categories
+    query = query_terms if nlp != "CAT" else query_attrs
+    
+    # initialise results to return
+    data_json = {}
+    # keep only codes above threshold
+    predictions = [(k,v) for k,v in tuples if v>=t]
+    
+    # if list of results is empty
+    if not predictions:
+        return data_json
 
-    # return tuples above threshold as list
-    predictions = {}
-    for k, v in tuples:
-        # take only those above threshold
-        if v >= t:
-            name = lib.loc[k].values[0]
-            predictions[k] = {"name": name, "acc": v}
-
-    return predictions
+    # rebuild query based on results
+    query = (query % ','.join('?'*len(predictions)))
+    # execute query
+    c.execute(query, [i[0] for i in predictions])
+    # get column names
+    header = [i[0] for i in c.description]
+    # get records from db
+    data = c.fetchall()
+    # build json
+    for i in data:
+        d = dict(zip(header[1:], i[1:]))
+        d.update({"acc": v for k,v in predictions if k==i[0]})
+        data_json[i[0]]=d
+        
+    return data_json
 
 
 @api.route("/predict", methods=["GET"])
@@ -147,7 +153,7 @@ def predict():
     # get from request the given free text by key
     text = request.args.get("text")
     # get from request the requested model to activate
-    model = request.args.get("model")
+    model = request.args.get("model").upper()
     # get the treshold from the request
     t = float(request.args.get("threshold"))
 
@@ -156,17 +162,17 @@ def predict():
         return json.dumps("{}")
 
     # pre process the inserted free text
-    text = cleanText(text)
+    text = clean_text(text)
 
     # get top predictions sorted by prob
-    res = {model: getTop(text, model, t)}
+    res = {model: get_top(text, model, t)}
 
     # return as json
     return json.dumps(res)
 
 
-@api.route("/predictAll", methods=["GET"])
-def predictAll():
+@api.route("/predict_all", methods=["GET"])
+def predict_all():
     '''
     @shahaal
     flask API service which return the results of all models by passing the given free text
@@ -177,20 +183,20 @@ def predictAll():
     t = float(request.args.get("threshold"))
 
     # pre process the inserted free text
-    text = cleanText(text)
+    text = clean_text(text)
 
     # predict possible baseterms
-    basetermResults = {"baseterm": getTop(text, 'BT', t)}
+    bt_res = get_top(text, 'BT', t)
     
     # predict possible facet categories
-    ifFacetResults = getTop(text, 'CAT', t)
-
-    # for each predicted facet category
-    for key in ifFacetResults:
+    fc_res = get_top(text, 'CAT', t)
+    
+    # predict possible facets per each category
+    for cat_code in fc_res.keys():
         # append the list of predicted facets
-        ifFacetResults[key]['facets'] = getTop(text, key, t)
+        fc_res[cat_code].update({"facets": get_top(text, cat_code, t)})
 
-    ifFacetResults = {"facets": ifFacetResults}
-
+    # build final json obj
+    final_json = {"bt": bt_res, "cat": fc_res}
     # Merge the dicts as json
-    return json.dumps([basetermResults, ifFacetResults])
+    return json.dumps(final_json)
