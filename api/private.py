@@ -21,12 +21,14 @@
 
 from flask import request
 
-from . import api
+from . import api, c
 
 from functools import wraps
 import datetime
+import pandas as pd
 import json
 import os
+import re
 
 # import azure table service
 from azure.cosmosdb.table.tableservice import TableService
@@ -51,6 +53,25 @@ tableName = os.environ['TABLE_NAME']
 if not table_service.exists(tableName):
     table_service.create_table(tableName)
 
+# read unsure data (used by feedback engine)
+unsureDf = pd.read_parquet(
+    "api/asset/data/unsure_data/foodex_unsure_data.parquet")
+query_terms = "SELECT termCode, termExtendedName FROM terms WHERE termCode IN (%s) LIMIT 100"
+query_attrs = "SELECT code, label FROM attributes WHERE code IN (%s) LIMIT 100"
+
+
+def join_intepretation(codes, descs):
+    ''' return the interpretation joined by delimiters '''
+    res = ""
+    for index, code in enumerate(codes):
+        if index == 0:
+            res += descs[code]+" # "
+        elif index % 2 == 1:
+            res += descs[code]+" . "
+        else:
+            res += descs[code]+" $ "
+    return res[:-3]
+
 
 def authorisation_required(f):
     ''' method used to check if the user has permission to post feedbacks '''
@@ -67,9 +88,9 @@ def authorisation_required(f):
     return decorated
 
 
-@api.route('/postFeedback', methods=['POST'])
+@api.route('/post_feedback', methods=['POST'])
 @authorisation_required
-def postFeedback(enable_feedbacks):
+def post_feedback(enable_feedbacks):
     # if current user is active
     if enable_feedbacks:
         # get the data from the request
@@ -84,5 +105,53 @@ def postFeedback(enable_feedbacks):
         # insert the entity in the table
         table_service.insert_entity(tableName, feedback)
         return json.dumps({'message': 'Feedback sent correctly'})
+    else:
+        return json.dumps({'message': 'An error occured while sending the feedback please try the administrator.'})
+
+
+@api.route('/get_codes', methods=['POST'])
+@authorisation_required
+def get_codes(enable_feedbacks):
+    # if current user is active
+    if enable_feedbacks:
+        # get the data from the request
+        dim = request.get_json().get("n")
+        # get randomly n records from the df (limited max to 100)
+        sample = unsureDf.sample(n=dim)
+        # initialise the returned json object
+        json_obj = {}
+        # build up the json obj
+        for index, row in sample.iterrows():
+            # get the full code
+            full_code = row['BASETERM_AND_EXPLICIT']
+            # split it by delimiters
+            codes = re.split("[#$.]", full_code)
+            # get the category codes and build the sql query
+            attrs = tuple([i for i in codes if len(i) == 3])
+            get_attrs = (query_attrs % ','.join('?'*len(attrs)))
+            # get the term codes and build the sql query
+            terms = tuple([i for i in codes if len(i) == 5])
+            get_terms = (query_terms % ','.join('?'*len(terms)))
+
+            descs = {}
+            # if there are categories get the description in dict
+            if(attrs):
+                # execute query
+                c.execute(get_attrs, [i for i in attrs])
+                descs.update(dict(c.fetchall()))
+            # if there are categories get the description in dict
+            if(terms):
+                c.execute(get_terms, [i for i in terms])
+                descs.update(dict(c.fetchall()))
+
+            # build full interpretation
+            full_desc = join_intepretation(codes, descs)
+            # fill the json obj at row index
+            json_obj[index] = {
+                'fullCode': full_code,
+                'fullDesc': full_desc
+            }
+
+        return json_obj
     else:
         return json.dumps({'message': 'An error occured while sending the feedback please try the administrator.'})
