@@ -6,7 +6,7 @@ content-type: application/json
 {
     "text":"white chocolate",
     "model":"bt",
-    "threshold": "0.1"
+    "threshold": "0.8"
 }
 ### predict from all models
 
@@ -16,6 +16,16 @@ content-type: application/json
 {
     "text":"white chocolate",
     "threshold": "0.1"
+}
+
+### get unsure data
+
+POST http://127.0.0.1:5000/getUnsureCodes HTTP/1.1
+content-type: application/json
+x-access-token: mysecretkey
+
+{
+    "numOfSamples": 5
 }
 
 
