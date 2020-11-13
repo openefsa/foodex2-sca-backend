@@ -27,9 +27,9 @@ import spacy, json, re
 
 rootPath = "api/asset/"
 # for production
-# models_path = "/work-dir/"
+models_path = "/work-dir/"
 # TODO only debug
-models_path = rootPath + "models/"
+# models_path = rootPath + "models/"
 
 # initialise all possible models name
 global possibleModels

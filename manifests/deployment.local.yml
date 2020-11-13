@@ -23,10 +23,10 @@ spec:
               mountPath: "/work-dir"
           resources:
             requests:
-              memory: "2Gi" # "32Gi"
+              memory: "1Gi" # "32Gi"
               cpu: "250m"
             limits:
-              memory: "3Gi" # "40Gi"
+              memory: "2Gi" # "40Gi"
               cpu: "500m"
           ports:
             - containerPort: 5000
@@ -56,7 +56,7 @@ spec:
           image: curlimages/curl
           command:
             - curl
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
+            - https://github.com/AlbSha/test/releases/download/v5.0-test/foodex2PreditionDeployed_test.zip
             - "-o"
             - "/work-dir/foodex2PreditionDeployed.zip"
           volumeMounts:
