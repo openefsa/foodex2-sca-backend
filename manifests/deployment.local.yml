@@ -2,8 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openefsafoodex2scabackend
+
 spec:
   progressDeadlineSeconds: 900
+  replicas: 1
   selector:
     matchLabels:
       app: openefsafoodex2scabackend
@@ -13,39 +15,68 @@ spec:
         app: openefsafoodex2scabackend
     spec:
       containers:
-      - name: openefsafoodex2scabackend
-        image: foodex2sca:backend # efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
-        imagePullPolicy: Never
-        resources:
-          requests:
-            memory: "2Gi" # "32Gi"
-            cpu: "250m"
-          limits:
-            memory: "8Gi" # "40Gi"
-            cpu: "500m"
-        ports:
-        - containerPort: 5000
-        env:
-          - name: ACCOUNT_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_NAME
-          - name: ACCOUNT_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_KEY
-          - name: TABLE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_TABLE_NAME
-          - name: SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: FEEDBACK_API_SECRET_KEY
+        - name: openefsafoodex2scabackend
+          image: foodex2sca:back # efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: workdir
+              mountPath: "/work-dir"
+          resources:
+            requests:
+              memory: "2Gi" # "32Gi"
+              cpu: "250m"
+            limits:
+              memory: "3Gi" # "40Gi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5000
+          env:
+            - name: ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_NAME
+            - name: ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_KEY
+            - name: TABLE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_TABLE_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: FEEDBACK_API_SECRET_KEY
+      initContainers:
+        - name: download-models
+          image: curlimages/curl
+          command:
+            - curl
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
+            - "-o"
+            - "/work-dir/foodex2PreditionDeployed.zip"
+          volumeMounts:
+            - name: workdir
+              mountPath: "/work-dir"
+        - name: unzip-models
+          image: curlimages/curl
+          command:
+            [
+              "unzip",
+              "/work-dir/foodex2PreditionDeployed.zip",
+              "-d",
+              "/work-dir",
+            ]
+          volumeMounts:
+            - name: workdir
+              mountPath: "/work-dir"
+      volumes:
+        - name: workdir
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -55,6 +86,5 @@ spec:
   selector:
     app: openefsafoodex2scabackend
   ports:
-  - port: 5000
+    - port: 5000
   type: LoadBalancer
-

@@ -1,25 +1,25 @@
-apiVersion : apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openefsafoodexwebcomponentbackend
-  
+
 spec:
   progressDeadlineSeconds: 900
   replicas: 1
   selector:
-     matchLabels:
-       app: openefsafoodexwebcomponentbackend
+    matchLabels:
+      app: openefsafoodexwebcomponentbackend
   template:
     metadata:
       labels:
-        app: openefsafoodexwebcomponentbackend 
+        app: openefsafoodexwebcomponentbackend
     spec:
       containers:
-        - name: openefsafoodexwebcomponentbackend 
+        - name: openefsafoodexwebcomponentbackend
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
           volumeMounts:
-           - name: workdir
-             mountPath: "/work-dir"
+            - name: workdir
+              mountPath: "/work-dir"
           resources:
             requests:
               memory: "32Gi"
@@ -28,48 +28,54 @@ spec:
               memory: "40Gi"
               cpu: "500m"
           ports:
-          - containerPort: 5000
+            - containerPort: 5000
           env:
-          - name: ACCOUNT_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_NAME
-          - name: ACCOUNT_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_KEY
-          - name: TABLE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_TABLE_NAME
-          - name: SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: FEEDBACK_API_SECRET_KEY
+            - name: ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_NAME
+            - name: ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_KEY
+            - name: TABLE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_TABLE_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: FEEDBACK_API_SECRET_KEY
       initContainers:
-      - name: download-models
-        image: curlimages/curl
-        command:
-        - curl
-        - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
-        - "-o"
-        - "/work-dir/foodex2PreditionDeployed.zip"  
-        volumeMounts:
-           - name: workdir
-             mountPath: "/work-dir"
-      - name: unzip-models
-        image: curlimages/curl
-        command: ["unzip", "/work-dir/foodex2PreditionDeployed.zip", "-d", "/work-dir"]
-        volumeMounts:
-           - name: workdir
-             mountPath: "/work-dir"
+        - name: download-models
+          image: curlimages/curl
+          command:
+            - curl
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
+            - "-o"
+            - "/work-dir/foodex2PreditionDeployed.zip"
+          volumeMounts:
+            - name: workdir
+              mountPath: "/work-dir"
+        - name: unzip-models
+          image: curlimages/curl
+          command:
+            [
+              "unzip",
+              "/work-dir/foodex2PreditionDeployed.zip",
+              "-d",
+              "/work-dir",
+            ]
+          volumeMounts:
+            - name: workdir
+              mountPath: "/work-dir"
       volumes:
         - name: workdir
-          emptyDir: {}       
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -80,5 +86,5 @@ spec:
   selector:
     app: openefsafoodexwebcomponentbackend
   ports:
-  - port: 5000
+    - port: 5000
   type: LoadBalancer
