@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openefsafoodex2scabackend
+  name: openefsafoodexwebcomponentbackend
 
 spec:
   progressDeadlineSeconds: 900
   replicas: 1
   selector:
     matchLabels:
-      app: openefsafoodex2scabackend
+      app: openefsafoodexwebcomponentbackend
   template:
     metadata:
       labels:
-        app: openefsafoodex2scabackend
+        app: openefsafoodexwebcomponentbackend
     spec:
       containers:
-        - name: openefsafoodex2scabackend
-          image: foodex2sca:back # efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+        - name: openefsafoodexwebcomponentbackend
+          image: foodex2sca:back
           imagePullPolicy: Never
           volumeMounts:
             - name: workdir
               mountPath: "/work-dir"
           resources:
             requests:
-              memory: "1Gi" # "32Gi"
+              memory: "1Gi"
               cpu: "250m"
             limits:
-              memory: "2Gi" # "40Gi"
+              memory: "4Gi"
               cpu: "500m"
           ports:
             - containerPort: 5000
@@ -55,9 +55,9 @@ spec:
         - name: download-models
           image: curlimages/curl
           command:
-            - curl
+            - wget
             - https://github.com/AlbSha/test/releases/download/v5.0-test/foodex2PreditionDeployed_test.zip
-            - "-o"
+            - "-O"
             - "/work-dir/foodex2PreditionDeployed.zip"
           volumeMounts:
             - name: workdir
@@ -77,14 +77,15 @@ spec:
       volumes:
         - name: workdir
           emptyDir: {}
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: openefsafoodex2scabackendservice
+  name: openefsafoodexwebcomponentbackendservice
 spec:
   selector:
-    app: openefsafoodex2scabackend
+    app: openefsafoodexwebcomponentbackend
   ports:
     - port: 5000
   type: LoadBalancer

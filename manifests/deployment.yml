@@ -54,9 +54,9 @@ spec:
         - name: download-models
           image: curlimages/curl
           command:
-            - curl
+            - wget
             - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
-            - "-o"
+            - "-O"
             - "/work-dir/foodex2PreditionDeployed.zip"
           volumeMounts:
             - name: workdir
