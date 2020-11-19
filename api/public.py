@@ -41,10 +41,10 @@ possibleModels.extend([
     if i not in [5, 13, 14, 15, 16, 29, 30]
 ])
 
-'''
+
 # TODO only debug
-possibleModels = ["BT", "CAT", "F03"] #, "F04", "F10", "F22", "F26", "F28"]
-'''
+# possibleModels = ["BT", "CAT", "F01"] #, "F04", "F10", "F22", "F26", "F28"]
+
 
 # load the models from the external file
 global models
@@ -62,8 +62,8 @@ with open(rootPath+'data/stop_words.csv', 'r') as f:
     stopWords = f.read().split('\n')
 
 # create queries
-query_terms = "SELECT * FROM terms WHERE termCode IN (%s) LIMIT 100"
-query_attrs = "SELECT * FROM attributes WHERE code IN (%s) LIMIT 100"
+query_terms = "SELECT * FROM terms WHERE termCode IN (%s)"
+query_attrs = "SELECT * FROM attributes WHERE code IN (%s)"
 
 
 """
@@ -111,17 +111,17 @@ def get_top(text, nlp, t):
     # for each class create the tuple <classCode, classProb>
     tuples = models[nlp](text).cats
 
-    # sort in decreasing order and keep only first 100
+    # sort in decreasing order
     tuples = sorted(
-        tuples.items(), key=lambda item: item[1], reverse=True)[:100]
+        tuples.items(), key=lambda item: item[1], reverse=True)
 
     # chose from which library to get the name
     query = query_terms if nlp != "CAT" else query_attrs
     
     # initialise results to return
     data_json = {}
-    # keep only codes above threshold
-    predictions = [(k,v) for k,v in tuples if v>=t]
+    # keep only codes above threshold max to n items
+    predictions = [(k,v) for k,v in tuples if v>=t][:20]
     
     # if list of results is empty
     if not predictions:
@@ -136,10 +136,12 @@ def get_top(text, nlp, t):
     # get records from db
     data = c.fetchall()
     # build json
-    for i in data:
-        d = dict(zip(header[1:], i[1:]))
-        d.update({"acc": v for k,v in predictions if k==i[0]})
-        data_json[i[0]]=d
+    for k,v in predictions:
+        for i in data:
+            if k == i[0]:
+                d = dict(zip(header[1:], i[1:]))
+                d.update({"acc": v})
+                data_json[i[0]]=d
         
     return data_json
 
