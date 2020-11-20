@@ -8,7 +8,7 @@
 The FoodEx2 Smart Coding Application is designed and developed internally in the European Food Safety Authority (DATA and AMU units). This project aims to simplify the FoodEx2 coding process of food starting from a given free text description. More specifically this is possible thanks to the use of FoodEx2 dedicated text classification models trained on historycal data. Please note that the various model functionalities are exposed through APIs. 
 
 <p align="center">
-    <img src="src/icons/FE2_POSI.jpg" alt="FoodEx2_SCA"/>
+    <img src="https://github.com/openefsa/foodex2-sca-frontend/blob/master/src/asset/icons/FE2_POSI_icon.jpg" alt="FoodEx2_SCA"/>
 </p>
 
 ## For Developers
