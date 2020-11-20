@@ -108,41 +108,37 @@ def clean_text(x):
 
 def get_top(text, nlp, t):
     global models
+    # build query based on required model
+    query = query_terms if nlp != "CAT" else query_attrs
     # for each class create the tuple <classCode, classProb>
     tuples = models[nlp](text).cats
-
     # sort in decreasing order
     tuples = sorted(
         tuples.items(), key=lambda item: item[1], reverse=True)
-
-    # chose from which library to get the name
-    query = query_terms if nlp != "CAT" else query_attrs
-    
-    # initialise results to return
-    data_json = {}
     # keep only codes above threshold max to n items
     predictions = [(k,v) for k,v in tuples if v>=t][:20]
     
     # if list of results is empty
     if not predictions:
-        return data_json
+        return json.dumps({"message":"nothing found"})
 
     # rebuild query based on results
     query = (query % ','.join('?'*len(predictions)))
     # execute query
     c.execute(query, [i[0] for i in predictions])
-    # get column names
-    header = [i[0] for i in c.description]
+    # get db column names
+    columns = [col[0] for col in c.description]
     # get records from db
-    data = c.fetchall()
+    rows = [dict(zip(columns, row)) for row in c.fetchall()]
+    
+    # initialise results to return
+    data_json = {}
     # build json
     for k,v in predictions:
-        for i in data:
-            if k == i[0]:
-                d = dict(zip(header[1:], i[1:]))
-                d.update({"acc": v})
-                data_json[i[0]]=d
-        
+        d = [r for r in rows if r['termCode']==k][0]
+        d.update({"acc": v})
+        data_json[k] = d
+    
     return data_json
 
 
