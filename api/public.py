@@ -120,7 +120,7 @@ def get_top(text, nlp, t):
     
     # if list of results is empty
     if not predictions:
-        return json.dumps({"message":"nothing found"})
+        return {}
 
     # rebuild query based on results
     query = (query % ','.join('?'*len(predictions)))
@@ -135,7 +135,7 @@ def get_top(text, nlp, t):
     data_json = {}
     # build json
     for k,v in predictions:
-        d = [r for r in rows if r['termCode']==k][0]
+        d = [r for r in rows if r['code' if (len(k)==3) else 'termCode']==k][0]
         d.update({"acc": v})
         data_json[k] = d
     
