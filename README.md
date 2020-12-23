@@ -13,7 +13,7 @@ The FoodEx2 Smart Coding Application is designed and developed internally in the
 
 ## For Developers
 ### Prerequisites
-* [Python](https://www.python.org/downloads/)
+* [Python](https://www.python.org/downloads/) (it is suggested to use python 3.8)
 
 ## Clone and install
 Clone the project locally in your workspace using the following command:
@@ -21,7 +21,7 @@ Clone the project locally in your workspace using the following command:
 git clone https://github.com/openefsa/foodex2-sca-back-end.git
 ```
 
-Now, move inside the project's folder just cloned and install all the required dependencies (listed in the requirements.txt file). Run the following command in order to automatically install all the dependencies using python pip package installer:
+Now, move inside the project's folder just cloned and install all the required dependencies (listed in the requirements.txt file). Create a **python virutal environment** inside the project folder and run the following command in order to automatically install all the dependencies using python pip package installer:
 ```
 pip install -r requirements.txt
 ```
@@ -32,10 +32,14 @@ In order to expose the available APIs provided, it is needed to serve the projec
 python app.py
 ```
 
-Now the APIs can be reached from the url shown by appending to it the specific API name of interest (e.g. https://localhost/predictAll).
+**Note that the file _/api/private.py_ is requesting Azure authentication which may defear from organisation to organisation. If you do not have valid Azure authentication than comment all the private functions.**
+
+Now the APIs can be reached from the url shown by appending to it the specific API name of interest (e.g. https://localhost/predict_all).
 
 ## Models
 The FoodEx2 SCA back-end project allows to obtain a series of FoodEx2 suggestions starting from the description of the food given in input. This is possible thanks to [Spacy](https://spacy.io/) text classification models. More precisely, we have initiated different Spacy [en_core_web_md](https://spacy.io/models/en#en_core_web_md) models, each specific for its role (check the [wiki](wiki) for additional information), which have been then trained using the historical data collected by EFSA. In the current version of the FoodEx2 SCA back-end, the data collected in consumption has been used.
+
+**Note that the project make use of Kubernates which downloads and exports all required models automaically on the _work-dir_ folder. For testing purposes, without using Kubernates, this can be done also by changing the model's path in the _api/public.py_ file. By doing so you can manually create your own folder that will contain the models (which can be manually built or downloaded and extracted).**
 
 ## Deployment
 The following section describes how to deploy the FoodEx2 Smart Coding Application's back-end locally.
