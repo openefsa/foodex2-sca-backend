@@ -81,6 +81,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    service.beta.kubernetes.io/azure-dns-label-name: openefsafoodexwebcomponentbackendservice
   name: openefsafoodexwebcomponentbackendservice
 spec:
   selector:
