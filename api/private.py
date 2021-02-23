@@ -106,7 +106,7 @@ def post_feedback(enable_feedbacks):
         table_service.insert_entity(tableName, feedback)
         return json.dumps({'message': 'Feedback sent correctly'})
     else:
-        return json.dumps({'message': 'An error occured while sending the feedback please try the administrator.'})
+        return json.dumps({'message': 'An error occurred while sending the feedback please try the administrator.'})
 
 
 @api.route('/get_codes', methods=['POST'])
@@ -116,6 +116,9 @@ def get_codes(enable_feedbacks):
     if enable_feedbacks:
         # get the data from the request
         dim = request.get_json().get("n")
+        # return if asking a not valid number of codes
+        if not(1 <= dim <= 100):
+            return json.dumps({'message': 'Sorry can return only a minimum of one and a maximum of 100 FoodEx2 codes. Try again.'})
         # get randomly n records from the df (limited max to 100)
         sample = unsureDf.sample(n=dim)
         # initialise the returned json object
@@ -154,4 +157,4 @@ def get_codes(enable_feedbacks):
 
         return json_obj
     else:
-        return json.dumps({'message': 'An error occured while sending the feedback please try the administrator.'})
+        return json.dumps({'message': 'An error occurred while getting the codes please contact the administrator.'})
