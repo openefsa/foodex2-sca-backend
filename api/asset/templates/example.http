@@ -10,7 +10,7 @@ content-type: application/json
 }
 ### predict from all models
 
-GET http://127.0.0.1:5000/predictAll HTTP/1.1
+GET http://127.0.0.1:5000/predict_all HTTP/1.1
 content-type: application/json
 
 {
@@ -20,18 +20,18 @@ content-type: application/json
 
 ### get unsure data
 
-POST http://127.0.0.1:5000/getUnsureCodes HTTP/1.1
+POST http://127.0.0.1:5000/get_codes HTTP/1.1
 content-type: application/json
 x-access-token: mysecretkey
 
 {
-    "numOfSamples": 5
+    "n": 5
 }
 
 
 ### post feedback to azure table
 
-POST http://127.0.0.1:5000/postFeedback HTTP/1.1
+POST http://127.0.0.1:5000/post_feedback HTTP/1.1
 Content-Type: "application/json"
 x-access-token: mysecretkey
 
