@@ -1,4 +1,4 @@
-# Project Under Development
+# &#9888; The following project is under development and therefore may be subject to changes until official release
 
 <p align="center">
 	<img src="http://www.efsa.europa.eu/profiles/efsa/themes/responsive_efsa/logo.png" alt="European Food Safety Authority"/>
