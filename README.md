@@ -42,13 +42,13 @@ _Note that it is also possible to use the application without the feedback engin
 
 
 ## Models
-The FoodEx2 SCA back-end project makes use of various text classification models [Spacy](https://spacy.io/). For more information on what data and how these models were trained check the [wiki](wiki).
+The FoodEx2 SCA back-end project makes use of various text classification models [Spacy](https://spacy.io/). For more information on what data and how these models were trained check the [wiki](https://github.com/openefsa/foodex2-sca-backend/wiki).
 
 **Note that the project makes use of Kubernates which automatically downloads and exports all required templates to the _work-dir_ folder. For testing purposes, without using Kubernates, this can also be done _locally_ by changing the model path in the _api/public.py_ file (check the _todo_ comments). By doing so, you can manually create your own folder that will contain the models (which can be built manually or downloaded and extracted).**
 
 
 ## Serve FoodEx2 SCA Locally
-Several APIs are available on the FoodEx2 Smart Coding Application (check the [wiki](wiki) for additional information). To expose them, you need to serve the project using Flask. Run the following command from the project folder:
+Several APIs are available on the FoodEx2 Smart Coding Application (check the [wiki](https://github.com/openefsa/foodex2-sca-backend/wiki) for additional information). To expose them, you need to serve the project using Flask. Run the following command from the project folder:
 ```
 python app.py
 ```
