@@ -2,19 +2,19 @@
 # -*- coding:utf-8 -*-
 ###
 # *********************************************************************
-# |                                                                    
+# |
 # | File: \public.py
 # | Description: <<desc here>>
 # | Project: api
 # | Created Date: 25th May 2020
 # | Author: Alban Shahaj (shahaal)
 # | Email: data.collection@efsa.europa.eu
-# | -----------------------------------------------------------------  
+# | -----------------------------------------------------------------
 # | Last Modified: Thursday, 24th June 2020
 # | Modified By: Alban Shahaj (shahaal)
-# | -----------------------------------------------------------------  
+# | -----------------------------------------------------------------
 # | Copyright (c) 2020 European Food Safety Authority (EFSA)
-# |                                                                    
+# |
 # *********************************************************************
 ###
 
@@ -22,7 +22,9 @@ from . import api, c
 
 from nltk.tokenize import word_tokenize
 from flask import request
-import spacy, json, re
+import spacy
+import json
+import re
 
 
 rootPath = "api/asset/"
@@ -43,7 +45,7 @@ possibleModels.extend([
 
 
 # TODO only debug
-# possibleModels = ["BT", "CAT", "F01"] #, "F04", "F10", "F22", "F26", "F28"]
+# possibleModels = ["BT", "CAT", "F01"]  # , "F04", "F10", "F22", "F26", "F28"]
 
 
 # load the models from the external file
@@ -72,6 +74,7 @@ def filterDuplicates(tokens):
 
     return sorted(set(tokens), key=tokens.index)
 """
+
 
 def filter_duplicates(tokens):
     ''' filter duplicated words maintaining the order '''
@@ -108,6 +111,11 @@ def clean_text(x):
 
 def get_top(text, nlp, t):
     global models
+
+    # return if not valid threshold
+    if not (0.001 <= t <= 99.999):
+        return json.dumps({'message': 'Not valid threshold.'})
+
     # build query based on required model
     query = query_terms if nlp != "CAT" else query_attrs
     # for each class create the tuple <classCode, classProb>
@@ -116,8 +124,8 @@ def get_top(text, nlp, t):
     tuples = sorted(
         tuples.items(), key=lambda item: item[1], reverse=True)
     # keep only codes above threshold max to n items
-    predictions = [(k,v) for k,v in tuples if v>=t][:20]
-    
+    predictions = [(k, v) for k, v in tuples if v >= t][:20]
+
     # if list of results is empty
     if not predictions:
         return {}
@@ -130,15 +138,16 @@ def get_top(text, nlp, t):
     columns = [col[0] for col in c.description]
     # get records from db
     rows = [dict(zip(columns, row)) for row in c.fetchall()]
-    
+
     # initialise results to return
     data_json = {}
     # build json
-    for k,v in predictions:
-        d = [r for r in rows if r['code' if (len(k)==3) else 'termCode']==k][0]
+    for k, v in predictions:
+        d = [r for r in rows if r['code' if (
+            len(k) == 3) else 'termCode'] == k][0]
         d.update({"acc": v})
         data_json[k] = d
-    
+
     return data_json
 
 
@@ -157,7 +166,7 @@ def predict():
 
     # if the requested model is not available
     if model not in possibleModels:
-        return json.dumps("{}")
+        return json.dumps({'message': 'The model requested is not valid or does not exsists.'})
 
     # pre process the inserted free text
     text = clean_text(text)
@@ -185,10 +194,10 @@ def predict_all():
 
     # predict possible baseterms
     bt_res = get_top(text, 'BT', t)
-    
+
     # predict possible facet categories
     fc_res = get_top(text, 'CAT', t)
-    
+
     # predict possible facets per each category
     for cat_code in fc_res.keys():
         # append the list of predicted facets
