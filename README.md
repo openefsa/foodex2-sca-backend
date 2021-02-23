@@ -48,92 +48,10 @@ The FoodEx2 SCA back-end project makes use of various text classification models
 
 
 ## Serve FoodEx2 SCA Locally
-Several APIs are available on the FoodEx2 Smart Coding Application. To expose them, you need to serve the project using Flask. Run the following command from the project folder:
+Several APIs are available on the FoodEx2 Smart Coding Application (check the [wiki](wiki) for additional information). To expose them, you need to serve the project using Flask. Run the following command from the project folder:
 ```
 python app.py
 ```
-
-## Public APIs
-Public APIs are freely accessible and therefore do not require authentication. Below you will find descriptions and the various parameters required for each of them:
-
-**Replace hostname and port with the server name and activated port respectively (e.g. if running in local without specifying a port the default one would be localhost:5000).**
-
-### predict
-This api allows to select a specific model, from the existing ones, and hence obtain FoodEx2 terms suggestiong based on the free text given as input.
-
-#### call example
-```
-GET http://hostname:port/predict_all HTTP/1.1
-content-type: application/json
-
-{
-    "text":"white chocolate",
-    "model":"bt",
-    "threshold": "0.1"
-}
-```
-
-#### parameters
-- Text: descrption of the food to encode
-- Model: name of one of the available models. If using the official models than one of the follwoing can be chosen (BT, CAT, F01, F02, F03, F04, F06, F07, F08, F09, F10, F11, F12, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27, F28, F31, F32, F33)
-- Threshold: filter those terms having a percentage of accuracy lower than the provided one.
-
-### predict_all
-This api allows to get FoodEx2 term predictions for each exsisting model.
-
-#### call example
-```
-GET http://hostname:port/predict_all HTTP/1.1
-content-type: application/json
-
-{
-    "text":"white chocolate",
-    "threshold": "0.1"
-}
-```
-
-#### parameters
-- Text: descrption of the food to encode;
-- Threshold: filter those terms having a percentage of accuracy lower than the provided one.
-
-## Private APIs
-The private APIs require token authentication. Here the description and parameters required for each api:
-
-### post_feedback
-This api allows to post feedback directly to the Azure storage table. The feedback collected will be used to retrain existing models with the aim of covering more unseen terms and add new examples to existing class.
-
-#### call example
-```
-POST http://hostname:port/post_feedback HTTP/1.1
-Content-Type: "application/json"
-x-access-token: mysecretkey
-
-{
-    "desc": "hazelnuts",
-    "code": "A034L"
-}
-```
-
-#### parameters
-- Desc: descrption of the food to submit as feedback
-- code: FoodEx2 code which better rapresent the given description.
-
-### get_codes
-This api allows to get a series of FoodEx2 codes which are not well described or which need further examples.
-
-#### call example
-```
-POST http://hostname:port/get_codes HTTP/1.1
-content-type: application/json
-x-access-token: mysecretkey
-
-{
-    "n": 5
-}
-```
-
-#### parameters
-- n: number of FoodEx2 codes requested.
 
 # Deployment
 The following section describes how to deploy the FoodEx2 Smart Coding Application's back-end locally.
