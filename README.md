@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="http://www.efsa.europa.eu/profiles/efsa/themes/responsive_efsa/logo.png" alt="European Food Safety Authority"/>
+	<img src="https://www.efsa.europa.eu/themes/custom/efsa_theme/logo.svg" alt="European Food Safety Authority"/>
 </p>
 
 # FoodEx2 Smart Coding Application (back-end)
