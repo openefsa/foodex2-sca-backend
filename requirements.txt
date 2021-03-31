@@ -1,4 +1,4 @@
-Spacy==2.3.2
+Spacy>=3.0.0,<=4.0.0
 NLTK>=3.5
 pandas>=1.1.1
 numpy==1.19.3
