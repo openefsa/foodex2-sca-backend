@@ -22,6 +22,7 @@
 from flask import request
 
 from . import api, c
+from .utils import get_translation
 
 from functools import wraps
 import datetime
@@ -54,10 +55,9 @@ if not table_service.exists(tableName):
     table_service.create_table(tableName)
 
 # read unsure data (used by feedback engine)
-unsureDf = pd.read_parquet(
-    "api/asset/data/unsure_data/foodex_unsure_data.parquet")
-query_terms = "SELECT termCode, termExtendedName FROM terms WHERE termCode IN (%s) LIMIT 100"
-query_attrs = "SELECT code, label FROM attributes WHERE code IN (%s) LIMIT 100"
+unsureDf = pd.read_csv("api/data/unsure_data/to_provide_examples.tsv", sep="\t", dtype={"CODE": "string"})
+query_terms = "SELECT termCode, termExtendedName FROM term WHERE termCode IN (%s) LIMIT 100"
+query_attrs = "SELECT code, label FROM attribute WHERE code IN (%s) LIMIT 100"
 
 
 def join_intepretation(codes, descs):
@@ -93,15 +93,16 @@ def authorisation_required(f):
 def post_feedback(enable_feedbacks):
     # if current user is active
     if enable_feedbacks:
-        # get the data from the request
-        data = request.get_json()
         # populate the feedback entity
         feedback = Entity()
         feedback.PartitionKey = 'foodex2feedbacks'
         time = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
         feedback.RowKey = time
-        feedback.description = data['desc']
-        feedback.code = data['code']
+        desc = request.get_json().get("desc")
+        from_ln = request.get_json().get("lang")
+        desc = get_translation(from_ln, desc) if desc else desc
+        feedback.description = desc
+        feedback.code = request.get_json().get("code")
         # insert the entity in the table
         table_service.insert_entity(tableName, feedback)
         return json.dumps({'message': 'Feedback sent correctly'})
@@ -126,7 +127,7 @@ def get_codes(enable_feedbacks):
         # build up the json obj
         for index, row in sample.iterrows():
             # get the full code
-            full_code = row['BASETERM_AND_EXPLICIT']
+            full_code = row['CODE']
             # split it by delimiters
             codes = re.split("[#$.]", full_code)
             # get the category codes and build the sql query
