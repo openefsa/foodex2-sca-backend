@@ -21,12 +21,14 @@
 import pathlib, os, sqlite3 as sq
 
 from flask import Blueprint
+from . import utils
 
 api = Blueprint('api', __name__, template_folder='templates')
 
 # create connection with local db
-db_path = pathlib.Path(os.path.abspath('api/asset/data/MTX_11.2.db')).as_uri()
-conn = sq.connect('{}?mode=ro'.format(db_path), uri=True, check_same_thread=False)
+db_path = utils.check_db('MTX_12.0')
+db__uri_path = pathlib.Path(os.path.abspath(db_path)).as_uri()
+conn = sq.connect('{}?mode=ro'.format(db__uri_path), uri=True,check_same_thread=False)
 # create cursor that will operate on db
 c = conn.cursor()
 
