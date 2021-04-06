@@ -19,19 +19,18 @@
 ###
 
 from . import api, c
+from .utils import get_translation
 
-from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from unicodedata import normalize
+from nltk import regexp_tokenize
 from flask import request
 import spacy
 import json
-import re
 
-
-rootPath = "api/asset/"
+asset_path = "api/data/assets/"
 # for production
-models_path = "/work-dir/"
-# TODO only debug
-# models_path = rootPath + "models/"
+models_path = "models/"
 
 # initialise all possible models name
 global possibleModels
@@ -43,10 +42,8 @@ possibleModels.extend([
     if i not in [5, 13, 14, 15, 16, 29, 30]
 ])
 
-
 # TODO only debug
-# possibleModels = ["BT", "CAT", "F01"]  # , "F04", "F10", "F22", "F26", "F28"]
-
+# possibleModels = ["BT", "CAT", "F04", "F28"]
 
 # load the models from the external file
 global models
@@ -56,57 +53,49 @@ for modelName in possibleModels:
     models[modelName] = spacy.load(models_path+modelName)
 
 
-# remove punctuation, stop words and not
-punctuation = r"[!()\-[\]{};:‘“”ªˆ©¤€÷×–¿•…´`'\"\\,<>./?@#$^&*_~=’+°]"
-# read custom stop words list
-stopWords = []
-with open(rootPath+'data/stop_words.csv', 'r') as f:
-    stopWords = f.read().split('\n')
-
 # create queries
-query_terms = "SELECT * FROM terms WHERE termCode IN (%s)"
-query_attrs = "SELECT * FROM attributes WHERE code IN (%s)"
+query_terms = "SELECT * FROM term WHERE termCode IN (%s)"
+query_attrs = "SELECT * FROM attribute WHERE code IN (%s)"
 
 
-"""
-def filterDuplicates(tokens):
-    ''' filter duplicated words maintaining the order '''
+def set_utilities():
+    ''' Set up utilites for text cleaning '''
 
-    return sorted(set(tokens), key=tokens.index)
-"""
+    # read custom punctuation list
+    punct = r"[!()\-[\]{};:¼‘“”ªˆ©¤€÷×–¿•…´`'\"\\,<>./?@#$^&*_~=’+]"
+    # set word lematizer for removing tense or plural forms
+    wnl = WordNetLemmatizer()
+    # read custom stop words list
+    stop_words = []
+    with open(asset_path+'stop_words.csv', 'r') as f:
+        for line in f:
+            stop_words.append(wnl.lemmatize(line.rstrip('\n')))
 
-
-def filter_duplicates(tokens):
-    ''' filter duplicated words maintaining the order '''
-
-    return sorted(set(tokens), key=tokens.index)
+    return punct, stop_words, wnl
 
 
 def clean_text(x):
-    ''' method used fro cleaning text given in input '''
-
-    # all lower case
-    clean_str = x.lower()
-    # remove punctuation
-    clean_str = re.sub(punctuation, " ", clean_str)
-    # tokenization
-    tokens = word_tokenize(clean_str)
-
-    # remove duplicates
-    tokens = filter_duplicates(tokens)
-
-    # remove duplicates
-    # tokens = filterDuplicates(tokens)
-    # remove stop words
-    tokens = [w for w in tokens if not w in stopWords]
-
+    ''' clean given text '''
+    # unicode and lowercase string
+    x = normalize('NFKD', x).encode('ascii', 'ignore').decode('ascii')
+    x = x.lower()
+    # tokenize using regex (preserve words and values with % or )
+    pattern = r'''\d+\.\d+(?:%|°|c)|\d+\.\d+|\d+(?:%|°)|\w+'''
+    tokens = regexp_tokenize(x, pattern)
+    # remove usless punctuation and words with lenght greater than 1
+    tokens = [w for w in tokens if w not in punct and len(w) > 1]
+    # remove duplicates (keep order)
+    tokens = sorted(set(tokens), key=tokens.index)
+    # remove tense or plural forms
+    tokens = [wnl.lemmatize(w) for w in tokens]
+    # remove stopwords/punct + lemma
+    tokens = [w for w in tokens if w not in stop_words]
+    # rebuild string
+    x = ' '.join(tokens)
     # enable/disable normalization
-    # normalizedStr = normalise(cleanStr, verbose=False)
-
-    # trim multiple white spaces
-    clean_str = ' '.join(tokens)
-
-    return clean_str
+    # normalizedStr = normalise(x, verbose=False)
+    # return none if string empty
+    return x if x != '' else None
 
 
 def get_top(text, nlp, t):
@@ -125,28 +114,24 @@ def get_top(text, nlp, t):
         tuples.items(), key=lambda item: item[1], reverse=True)
     # keep only codes above threshold max to n items
     predictions = [(k, v) for k, v in tuples if v >= t][:20]
-
-    # if list of results is empty
-    if not predictions:
-        return {}
-
-    # rebuild query based on results
-    query = (query % ','.join('?'*len(predictions)))
-    # execute query
-    c.execute(query, [i[0] for i in predictions])
-    # get db column names
-    columns = [col[0] for col in c.description]
-    # get records from db
-    rows = [dict(zip(columns, row)) for row in c.fetchall()]
-
     # initialise results to return
-    data_json = {}
-    # build json
-    for k, v in predictions:
-        d = [r for r in rows if r['code' if (
-            len(k) == 3) else 'termCode'] == k][0]
-        d.update({"acc": v})
-        data_json[k] = d
+    data_json = []
+    # if list of results is not empty
+    if predictions:
+        # rebuild query based on results
+        query = (query % ','.join('?'*len(predictions)))
+        # execute query
+        c.execute(query, [i[0] for i in predictions])
+        # get db column names
+        columns = [col[0] for col in c.description]
+        # get records from db
+        rows = [dict(zip(columns, row)) for row in c.fetchall()]
+        # build json
+        for k, v in predictions:
+            d = [r for r in rows if r['code' if (
+                len(k) == 3) else 'termCode'] == k][0]
+            d.update({"acc": v})
+            data_json.append(d)
 
     return data_json
 
@@ -158,24 +143,27 @@ def predict():
     flask API service which return the results given from the model specified in input
     '''
     # get from request the given free text by key
-    text = request.args.get("text")
+    desc = request.args.get("desc")
     # get from request the requested model to activate
     model = request.args.get("model").upper()
-    # get the treshold from the request
-    t = float(request.args.get("threshold"))
-
     # if the requested model is not available
     if model not in possibleModels:
         return json.dumps({'message': 'The model requested is not valid or does not exsists.'})
-
+    # get the treshold from the request
+    thld = float(request.args.get("thld"))
+    # get from language (if not set use en as dft)
+    from_ln = request.args.get("lang")
+    # if string is not null translate it
+    trsl = get_translation(from_ln, desc) if desc else desc
     # pre process the inserted free text
-    text = clean_text(text)
-
+    cleaned = clean_text(trsl)
     # get top predictions sorted by prob
-    res = {model: get_top(text, model, t)}
-
+    res = {model: get_top(cleaned, model, thld)}
+    # build final json
+    final_json = {"desc":{"orig": desc, "trsl": trsl}}
+    final_json.update(res)
     # return as json
-    return json.dumps(res)
+    return json.dumps(final_json)
 
 
 @api.route("/predict_all", methods=["GET"])
@@ -185,25 +173,30 @@ def predict_all():
     flask API service which return the results of all models by passing the given free text
     '''
     # get from request the given free text by key
-    text = request.args.get("text")
+    desc = request.args.get("desc")
     # get the treshold from the request
-    t = float(request.args.get("threshold"))
-
+    thld = float(request.args.get("thld"))
+    # get from language (if not set use en as dft)
+    from_ln = request.args.get("lang")
+    # if string is not null translate it
+    trsl = get_translation(from_ln, desc) if desc else desc
     # pre process the inserted free text
-    text = clean_text(text)
-
+    cleaned = clean_text(trsl)
     # predict possible baseterms
-    bt_res = get_top(text, 'BT', t)
-
+    bt_res = get_top(cleaned, 'BT', thld)
     # predict possible facet categories
-    fc_res = get_top(text, 'CAT', t)
-
+    fc_res = get_top(cleaned, 'CAT', thld)
     # predict possible facets per each category
-    for cat_code in fc_res.keys():
+    for d in fc_res:
         # append the list of predicted facets
-        fc_res[cat_code].update({"facets": get_top(text, cat_code, t)})
+        d.update({"facets": get_top(cleaned,  d['code'], thld)})
 
     # build final json obj
-    final_json = {"bt": bt_res, "cat": fc_res}
+    final_json = {"desc":{"orig": desc, "trsl": trsl}}
+    final_json.update({"bt": bt_res, "cat": fc_res})
     # Merge the dicts as json
     return json.dumps(final_json)
+
+
+# set utilities
+punct, stop_words, wnl = set_utilities()
