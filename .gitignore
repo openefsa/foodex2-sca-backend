@@ -1,8 +1,9 @@
 # ignore folder named 'node_modules'
-api/asset/models/
+models/*
+!models/*.empty
 venv/
 __pycache__/
 .vscode/
 doc/
 manifests/secrets.yml
-api/asset/data/unsure_data/merged_only_explicit_unsure.xlsx
+api/data/unsure_data/merged_only_explicit_unsure.xlsx
