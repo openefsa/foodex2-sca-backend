@@ -82,11 +82,10 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    service.beta.kubernetes.io/azure-dns-label-name: openefsafoodexwebcomponentbackendservice
   name: openefsafoodexwebcomponentbackendservice
 spec:
   selector:
     app: openefsafoodexwebcomponentbackend
   ports:
     - port: 5000
-  type: LoadBalancer
+      targetPort: 5000
