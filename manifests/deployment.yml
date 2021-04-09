@@ -18,14 +18,14 @@ spec:
         - name: openefsafoodexwebcomponentbackend
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
           volumeMounts:
-            - name: workdir
-              mountPath: "/work-dir"
+            - name: models
+              mountPath: "/usr/src/app/models"
           resources:
             requests:
-              memory: "32Gi"
+              memory: "256Mi"
               cpu: "250m"
             limits:
-              memory: "40Gi"
+              memory: "1Gi"
               cpu: "500m"
           ports:
             - containerPort: 5000
@@ -55,26 +55,26 @@ spec:
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/foodex2PreditionDeployed_v5.zip
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/foodex2/exposure/en_textcat_foodex2_1.2.zip
             - "-O"
-            - "/work-dir/foodex2PreditionDeployed.zip"
+            - "/usr/src/app/models/en_textcat_foodex2_1.2.zip"
           volumeMounts:
-            - name: workdir
-              mountPath: "/work-dir"
+            - name: models
+              mountPath: "/usr/src/app/models"
         - name: unzip-models
           image: curlimages/curl
           command:
             [
               "unzip",
-              "/work-dir/foodex2PreditionDeployed.zip",
+              "/usr/src/app/models/en_textcat_foodex2_1.2.zip",
               "-d",
-              "/work-dir",
+              "/usr/src/app/models",
             ]
           volumeMounts:
-            - name: workdir
-              mountPath: "/work-dir"
+            - name: models
+              mountPath: "/usr/src/app/models"
       volumes:
-        - name: workdir
+        - name: models
           emptyDir: {}
 
 ---
