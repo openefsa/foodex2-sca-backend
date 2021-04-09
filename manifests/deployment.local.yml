@@ -19,38 +19,38 @@ spec:
           image: foodex2sca:back
           imagePullPolicy: Never
           env:
-          - name: MODELS_PATH
-            value: /usr/src/app/models
-          - name: ACCOUNT_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_NAME
-          - name: ACCOUNT_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_ACCOUNT_KEY
-          - name: TABLE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: BLOB_STORAGE_TABLE_NAME
-          - name: SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: FEEDBACK_API_SECRET_KEY
-          - name: TRANSLATOR_SUBSCRIPTION_KEY
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: TRANSLATOR_SUBSCRIPTION_KEY
-          - name: TRANSLATOR_RESOURCE_LOCATION
-            valueFrom:
-              secretKeyRef:
-                name: flaskapi-secrets
-                key: TRANSLATOR_RESOURCE_LOCATION
+            - name: MODELS_PATH
+              value: /usr/src/app/models
+            - name: ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_NAME
+            - name: ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_ACCOUNT_KEY
+            - name: TABLE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: BLOB_STORAGE_TABLE_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: FEEDBACK_API_SECRET_KEY
+            - name: TRANSLATOR_SUBSCRIPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: TRANSLATOR_SUBSCRIPTION_KEY
+            - name: TRANSLATOR_RESOURCE_LOCATION
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: TRANSLATOR_RESOURCE_LOCATION
           volumeMounts:
             - name: models
               mountPath: "$(MODELS_PATH)"
@@ -68,9 +68,9 @@ spec:
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/foodex2/exposure/en_textcat_foodex2_1.2.zip
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_1.2.zip
             - "-O"
-            - "$(MODELS_PATH)/en_textcat_foodex2_1.2.zip"
+            - "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip"
           volumeMounts:
             - name: models
               mountPath: "$(MODELS_PATH)"
@@ -79,7 +79,7 @@ spec:
           command:
             [
               "unzip",
-              "$(MODELS_PATH)/en_textcat_foodex2_1.2.zip",
+              "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip",
               "-d",
               "$(MODELS_PATH)",
             ]

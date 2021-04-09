@@ -17,19 +17,9 @@ spec:
       containers:
         - name: openefsafoodexwebcomponentbackend
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
-          volumeMounts:
-            - name: models
-              mountPath: "/usr/src/app/models"
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
-          ports:
-            - containerPort: 5000
           env:
+            - name: MODELS_PATH
+              value: /usr/src/app/models
             - name: ACCOUNT_NAME
               valueFrom:
                 secretKeyRef:
@@ -50,29 +40,51 @@ spec:
                 secretKeyRef:
                   name: flaskapi-secrets
                   key: FEEDBACK_API_SECRET_KEY
+            - name: TRANSLATOR_SUBSCRIPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: TRANSLATOR_SUBSCRIPTION_KEY
+            - name: TRANSLATOR_RESOURCE_LOCATION
+              valueFrom:
+                secretKeyRef:
+                  name: flaskapi-secrets
+                  key: TRANSLATOR_RESOURCE_LOCATION
+          volumeMounts:
+            - name: models
+              mountPath: "$(MODELS_PATH)"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5000
       initContainers:
         - name: download-models
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/foodex2/exposure/en_textcat_foodex2_1.2.zip
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_1.2.zip
             - "-O"
-            - "/usr/src/app/models/en_textcat_foodex2_1.2.zip"
+            - "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip"
           volumeMounts:
             - name: models
-              mountPath: "/usr/src/app/models"
+              mountPath: "$(MODELS_PATH)"
         - name: unzip-models
           image: curlimages/curl
           command:
             [
               "unzip",
-              "/usr/src/app/models/en_textcat_foodex2_1.2.zip",
+              "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip",
               "-d",
-              "/usr/src/app/models",
+              "$(MODELS_PATH)",
             ]
           volumeMounts:
             - name: models
-              mountPath: "/usr/src/app/models"
+              mountPath: "$(MODELS_PATH)"
       volumes:
         - name: models
           emptyDir: {}
