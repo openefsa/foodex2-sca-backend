@@ -18,8 +18,6 @@ spec:
         - name: openefsafoodexwebcomponentbackend
           image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
           env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
             - name: ACCOUNT_NAME
               valueFrom:
                 secretKeyRef:
@@ -52,7 +50,7 @@ spec:
                   key: TRANSLATOR_RESOURCE_LOCATION
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
           resources:
             requests:
               memory: "256Mi"
