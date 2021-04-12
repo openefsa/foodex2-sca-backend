@@ -66,6 +66,9 @@ spec:
       initContainers:
         - name: download-models
           image: curlimages/curl
+          env:
+            - name: MODELS_PATH
+              value: /usr/src/app/models
           command:
             - wget
             - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_1.2.zip
