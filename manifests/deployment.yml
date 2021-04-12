@@ -78,6 +78,9 @@ spec:
               mountPath: "$(MODELS_PATH)"
         - name: unzip-models
           image: curlimages/curl
+          env:
+            - name: MODELS_PATH
+              value: /usr/src/app/models
           command:
             [
               "unzip",
