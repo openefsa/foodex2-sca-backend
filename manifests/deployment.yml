@@ -65,32 +65,26 @@ spec:
       initContainers:
         - name: download-models
           image: curlimages/curl
-          env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
           command:
             - wget
             - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_1.2.zip
             - "-O"
-            - "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip"
+            - "/usr/src/app/models/en_textcat_foodex2_expo_1.2.zip"
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
         - name: unzip-models
           image: curlimages/curl
-          env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
           command:
             [
               "unzip",
-              "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip",
+              "/usr/src/app/models/en_textcat_foodex2_expo_1.2.zip",
               "-d",
-              "$(MODELS_PATH)",
+              "/usr/src/app/models",
             ]
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
       volumes:
         - name: models
           emptyDir: {}
