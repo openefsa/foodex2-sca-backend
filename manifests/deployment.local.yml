@@ -19,8 +19,6 @@ spec:
           image: foodex2sca:back
           imagePullPolicy: Never
           env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
             - name: ACCOUNT_NAME
               valueFrom:
                 secretKeyRef:
@@ -53,7 +51,7 @@ spec:
                   key: TRANSLATOR_RESOURCE_LOCATION
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
           resources:
             requests:
               memory: "256Mi"
@@ -66,32 +64,26 @@ spec:
       initContainers:
         - name: download-models
           image: curlimages/curl
-          env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_1.2.zip
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_11.3.zip
             - "-O"
-            - "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip"
+            - "/usr/src/app/models/en_textcat_foodex2_expo_11.3.zip"
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
         - name: unzip-models
           image: curlimages/curl
-          env:
-            - name: MODELS_PATH
-              value: /usr/src/app/models
           command:
             [
               "unzip",
-              "$(MODELS_PATH)/en_textcat_foodex2_expo_1.2.zip",
+              "/usr/src/app/models/en_textcat_foodex2_expo_11.3.zip",
               "-d",
-              "$(MODELS_PATH)",
+              "/usr/src/app/models",
             ]
           volumeMounts:
             - name: models
-              mountPath: "$(MODELS_PATH)"
+              mountPath: "/usr/src/app/models"
       volumes:
         - name: models
           emptyDir: {}
