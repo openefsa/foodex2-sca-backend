@@ -65,9 +65,9 @@ spec:
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_11.2.zip
+            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_expo_11.3.zip
             - "-O"
-            - "/usr/src/app/models/en_textcat_foodex2_expo_11.2.zip"
+            - "/usr/src/app/models/en_textcat_foodex2_expo_11.3.zip"
           volumeMounts:
             - name: models
               mountPath: "/usr/src/app/models"
@@ -76,7 +76,7 @@ spec:
           command:
             [
               "unzip",
-              "/usr/src/app/models/en_textcat_foodex2_expo_11.2.zip",
+              "/usr/src/app/models/en_textcat_foodex2_expo_11.3.zip",
               "-d",
               "/usr/src/app/models",
             ]

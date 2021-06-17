@@ -27,6 +27,8 @@ from nltk import regexp_tokenize
 from flask import request
 import spacy
 import json
+import threading
+from fuzzywuzzy import fuzz
 
 asset_path = "api/data/assets/"
 # for production
@@ -56,6 +58,29 @@ for modelName in possibleModels:
 # create queries
 query_terms = "SELECT * FROM term WHERE termCode IN (%s)"
 query_attrs = "SELECT * FROM attribute WHERE code IN (%s)"
+
+lock = threading.Lock()
+
+
+def parse_boolean(var):
+    ''' parse text to bool '''
+    return var.lower() in ("yes", "true", "t", "1") if var else False
+
+
+def is_thld_valid(thld):
+    ''' check if the threshold is within the range '''
+    valid = False
+    # if the threshold is defined
+    if thld:
+        # parse to float and check if within valid range
+        thld = float(thld)/100
+        valid = (0.0001 <= thld <= 0.9999)
+
+    return valid, thld
+
+
+def get_error_msg(txt):
+    return json.dumps({'message': txt})
 
 
 def set_utilities():
@@ -98,12 +123,8 @@ def clean_text(x):
     return x if x != '' else None
 
 
-def get_top(text, nlp, t):
+def get_top(text, nlp, thld, smart_acc):
     global models
-
-    # return if not valid threshold
-    if not (0.001 <= t <= 99.999):
-        return json.dumps({'message': 'Not valid threshold.'})
 
     # build query based on required model
     query = query_terms if nlp != "CAT" else query_attrs
@@ -113,60 +134,42 @@ def get_top(text, nlp, t):
     tuples = sorted(
         tuples.items(), key=lambda item: item[1], reverse=True)
     # keep only codes above threshold max to n items
-    predictions = [(k, v) for k, v in tuples if v >= t][:20]
+    predictions = [(k, v) for k, v in tuples if v >= thld][:20]
     # initialise results to return
     data_json = []
     # if list of results is not empty
     if predictions:
-        # rebuild query based on results
-        query = (query % ','.join('?'*len(predictions)))
-        # execute query
-        c.execute(query, [i[0] for i in predictions])
-        # get db column names
-        columns = [col[0] for col in c.description]
-        # get records from db
-        rows = [dict(zip(columns, row)) for row in c.fetchall()]
-        # build json
-        for k, v in predictions:
-            d = [r for r in rows if r['code' if (
-                len(k) == 3) else 'termCode'] == k][0]
-            d.update({"acc": v})
-            data_json.append(d)
-
+        try:
+            lock.acquire(True)
+            # rebuild query based on results
+            query = (query % ','.join('?'*len(predictions)))
+            # execute query
+            c.execute(query, [i[0] for i in predictions])
+            # get db column names
+            columns = [col[0] for col in c.description]
+            # get records from db
+            rows = [dict(zip(columns, row)) for row in c.fetchall()]
+            # build json
+            for k, v in predictions:
+                is_category = len(k) == 3
+                d = [r for r in rows if r['code' if is_category else 'termCode'] == k][0]
+                acc = v
+                # if smart accuracy enabled check str distance (not for categories)
+                if not is_category and smart_acc:
+                    str_dist = fuzz.partial_token_sort_ratio(
+                        text, d['termExtendedName'])/100
+                    acc = (v + str_dist)/2
+                d.update({"acc": acc})
+                data_json.append(d)
+        finally:
+            lock.release()
+    # sort the list of dicts if used smart thld
+    data_json = sorted(
+        data_json, key=lambda i: i['acc'], reverse=True) if smart_acc else data_json
     return data_json
 
 
 @api.route("/predict", methods=["GET"])
-def predict():
-    '''
-    @shahaal
-    flask API service which return the results given from the model specified in input
-    '''
-    # get from request the given free text by key
-    desc = request.args.get("desc")
-    # get from request the requested model to activate
-    model = request.args.get("model").upper()
-    # if the requested model is not available
-    if model not in possibleModels:
-        return json.dumps({'message': 'The model requested is not valid or does not exsists.'})
-    # get the treshold from the request
-    thld = float(request.args.get("thld"))
-    # get from language (if not set use en as dft)
-    from_ln = request.args.get("lang")
-    # if string is not null translate it
-    trsl = get_translation(from_ln, desc) if desc else desc
-    # pre process the inserted free text
-    cleaned = clean_text(trsl)
-    # get top predictions sorted by prob
-    res = {model: get_top(cleaned, model, thld)}
-    # build final json
-    final_json = {"desc":{"orig": desc, "trsl": trsl}}
-    final_json.update(res)
-    # return as json
-    return json.dumps(final_json)
-
-
-@api.route("/predict_all", methods=["GET"])
 def predict_all():
     '''
     @shahaal
@@ -174,26 +177,51 @@ def predict_all():
     '''
     # get from request the given free text by key
     desc = request.args.get("desc")
-    # get the treshold from the request
-    thld = float(request.args.get("thld"))
+
+    # get the treshold % from the request
+    thld_valid, thld = is_thld_valid(request.args.get("thld"))
+    # return if not valid threshold (range between 0.01% and 99.99%)
+    if not thld_valid:
+        return get_error_msg('Not valid threshold.')
+
+    # check if smart threshold is requested (use fuzzywuzzy for string similarity)
+    smart_acc = parse_boolean(request.args.get("smartAcc"))
+    
+    # get from request the requested model to activate
+    model = request.args.get("model")
+    model = model.upper() if model else None
+    # if the requested model is not available
+    if model and model not in possibleModels:
+        return get_error_msg('The model requested is not valid or does not exsists.')
+
     # get from language (if not set use en as dft)
     from_ln = request.args.get("lang")
     # if string is not null translate it
     trsl = get_translation(from_ln, desc) if desc else desc
+    
     # pre process the inserted free text
     cleaned = clean_text(trsl)
-    # predict possible baseterms
-    bt_res = get_top(cleaned, 'BT', thld)
-    # predict possible facet categories
-    fc_res = get_top(cleaned, 'CAT', thld)
-    # predict possible facets per each category
-    for d in fc_res:
-        # append the list of predicted facets
-        d.update({"facets": get_top(cleaned,  d['code'], thld)})
+    
+    # final json to return
+    final_json = {"desc": {"orig": desc, "trsl": trsl}}
+    # if specific model requested 
+    if model:
+        # get top predictions sorted by prob
+        res = {model: get_top(cleaned, model, thld, smart_acc)}
+        # update final json with predictions
+        final_json.update(res)
+    else:
+        # predict possible baseterms
+        bt_res = get_top(cleaned, 'BT', thld, smart_acc)
+        # predict possible facet categories
+        fc_res = get_top(cleaned, 'CAT', thld, smart_acc)
+        # predict possible facets per each category
+        for d in fc_res:
+            # append the list of predicted facets
+            d.update({"facets": get_top(cleaned,  d['code'], thld, smart_acc)})
+        # update final json with predictions
+        final_json.update({"bt": bt_res, "cat": fc_res})
 
-    # build final json obj
-    final_json = {"desc":{"orig": desc, "trsl": trsl}}
-    final_json.update({"bt": bt_res, "cat": fc_res})
     # Merge the dicts as json
     return json.dumps(final_json)
 
