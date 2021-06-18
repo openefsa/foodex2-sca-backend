@@ -40,11 +40,16 @@ The file _/api/private.py_ contains services for handling feedback that can be t
 
 _Note that it is also possible to use the application without the feedback engine and therefore Azure Table Storage is not required. To do this, just comment out all the code inside the file._
 
+The file _/api/utils.py_ contains services for handling the translation of non-English food description. The translation is made using [Microsoft Azure Cognitive Services Translator](https://docs.microsoft.com/en-us/azure/cognitive-services/translator/). For being able to use the translation function fill in the following credentials:
+- TRANSLATOR_SUBSCRIPTION_KEY
+- TRANSLATOR_RESOURCE_LOCATION
+
+_Note that it is also possible to use the application without the translation function. To do this, just comment out all the code inside the file._
 
 ## Models
 The FoodEx2 SCA back-end project makes use of various text classification models [Spacy](https://spacy.io/). For more information on what data and how these models were trained check the [wiki](https://github.com/openefsa/foodex2-sca-backend/wiki).
 
-**Note that the project makes use of Kubernates which automatically downloads and exports all required templates to the _work-dir_ folder. For testing purposes, without using Kubernates, this can also be done _locally_ by changing the model path in the _api/public.py_ file (check the _todo_ comments). By doing so, you can manually create your own folder that will contain the models (which can be built manually or downloaded and extracted).**
+**Note that the project makes use of Kubernates which automatically downloads and extract all models into the dedicated folder. For testing purposes, without using Kubernates, just extract the models within the _models_ folder.**
 
 
 ## Serve FoodEx2 SCA Locally
