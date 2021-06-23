@@ -186,7 +186,7 @@ def predict():
 
     # check if smart threshold is requested (use fuzzywuzzy for string similarity)
     smart_acc = parse_boolean(request.args.get("smartAcc"))
-    
+
     # get from request the requested model to activate
     model = request.args.get("model")
     model = model.upper() if model else None
@@ -198,13 +198,13 @@ def predict():
     from_ln = request.args.get("lang")
     # if string is not null translate it
     trsl = get_translation(from_ln, desc) if desc else desc
-    
+
     # pre process the inserted free text
     cleaned = clean_text(trsl)
-    
+
     # final json to return
     final_json = {"desc": {"orig": desc, "trsl": trsl}}
-    # if specific model requested 
+    # if specific model requested
     if model:
         # get top predictions sorted by prob
         res = {model: get_top(cleaned, model, thld, smart_acc)}
@@ -221,40 +221,6 @@ def predict():
             d.update({"facets": get_top(cleaned,  d['code'], thld, smart_acc)})
         # update final json with predictions
         final_json.update({"bt": bt_res, "cat": fc_res})
-
-    # Merge the dicts as json
-    return json.dumps(final_json)
-
-# TODO to be removed
-@api.route("/predict_all", methods=["GET"])
-def predict_all():
-    '''
-    @shahaal
-    flask API service which return the results of all models by passing the given free text
-    '''
-    # get from request the given free text by key
-    desc = request.args.get("desc")
-    # get the treshold from the request
-    thld = float(request.args.get("thld"))
-    # get from language (if not set use en as dft)
-    from_ln = request.args.get("lang")
-    # if string is not null translate it
-    trsl = get_translation(from_ln, desc) if desc else desc
-
-    # pre process the inserted free text
-    cleaned = clean_text(trsl)
-    # predict possible baseterms
-    bt_res = get_top(cleaned, 'BT', thld, False)
-    # predict possible facet categories
-    fc_res = get_top(cleaned, 'CAT', thld, False)
-    # predict possible facets per each category
-    for d in fc_res:
-        # append the list of predicted facets
-        d.update({"facets": get_top(cleaned,  d['code'], thld, False)})
-
-    # build final json obj
-    final_json = {"desc":{"orig": desc, "trsl": trsl}}
-    final_json.update({"bt": bt_res, "cat": fc_res})
 
     # Merge the dicts as json
     return json.dumps(final_json)
