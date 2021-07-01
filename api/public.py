@@ -41,7 +41,7 @@ possibleModels = ["BT", "CAT"]
 # create list facets
 possibleModels.extend([
     "F" + "{:02}".format(i) for i in range(1, 34)
-    if i not in [5, 13, 14, 15, 16, 29, 30]
+    if i not in [5, 13, 14, 15, 16]
 ])
 
 # TODO only debug
