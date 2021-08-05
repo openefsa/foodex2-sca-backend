@@ -127,7 +127,7 @@ def get_codes(enable_feedbacks):
         # build up the json obj
         for index, row in sample.iterrows():
             # get the full code
-            full_code = row['CODE']
+            full_code = row['code']
             # split it by delimiters
             codes = re.split("[#$.]", full_code)
             # get the category codes and build the sql query
