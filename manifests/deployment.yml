@@ -98,3 +98,16 @@ spec:
   ports:
     - port: 5000
       targetPort: 5000
+
+
+---
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: foodex2-backend-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: openefsafoodexwebcomponentbackend
