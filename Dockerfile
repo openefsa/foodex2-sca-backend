@@ -3,8 +3,8 @@ FROM python:3.8-slim
 WORKDIR /usr/src/app
 
 # We copy just the requirements.txt first to leverage Docker cache
-COPY ["requirements.txt", "./"]
-RUN pip install --no-cache-dir -r requirements.txt
+COPY ["requirements-frozen.txt", "./"]
+RUN pip install --no-cache-dir -r requirements-frozen.txt
 RUN python -c "import nltk;nltk.download('wordnet');"
 RUN python -c "import nltk;nltk.download('omw-1.4');"
 
