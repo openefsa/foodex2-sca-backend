@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 COPY ["requirements.txt", "./"]
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "import nltk;nltk.download('wordnet');"
+RUN python -c "import nltk;nltk.download('omw-1.4');"
+
 
 COPY . .
 
