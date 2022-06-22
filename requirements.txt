@@ -1,7 +1,7 @@
 Spacy==3.0.6
 NLTK>=3.5
 pandas>=1.1.1
-numpy==1.19.3
+numpy==1.22.0
 click>=6.7
 Flask>=1.1.2
 Flask-Cors>=3.0.8
