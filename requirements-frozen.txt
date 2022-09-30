@@ -17,7 +17,7 @@ fuzzywuzzy==0.18.0
 idna==3.3
 itsdangerous==2.0.1
 Jinja2==3.0.3
-joblib==1.1.0
+joblib==1.2.0
 MarkupSafe==2.0.1
 murmurhash==1.0.6
 nltk==3.6.7
