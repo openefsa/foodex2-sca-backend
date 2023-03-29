@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openefsafoodexwebcomponentbackend
+  namespace: foodex2
 
 spec:
   progressDeadlineSeconds: 900
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend
-          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+          image: efsainnovation.azurecr.io/openefsafoodexwebcomponentbackend:957
           env:
             - name: ACCOUNT_NAME
               valueFrom:
@@ -65,7 +66,7 @@ spec:
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_11.3.1.zip
+            - https://publicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_11.3.1.zip
             - "-O"
             - "/usr/src/app/models/en_textcat_foodex2_11.3.1.zip"
           volumeMounts:
@@ -92,6 +93,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: openefsafoodexwebcomponentbackendservice
+  namespace: foodex2
 spec:
   selector:
     app: openefsafoodexwebcomponentbackend
@@ -106,6 +108,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: foodex2-backend-pdb
+  namespace: foodex2
 spec:
   minAvailable: 1
   selector:
