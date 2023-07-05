@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: openefsafoodexwebcomponentbackend
-          image: efsadsreg.azurecr.io/openefsafoodexwebcomponentbackend
+          image: efsainnovation.azurecr.io/openefsafoodexwebcomponentbackend
           env:
             - name: ACCOUNT_NAME
               valueFrom:
