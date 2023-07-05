@@ -16,7 +16,7 @@ variables:
   containerRegistry: 'efsainnovation.azurecr.io'
   dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildId)'
-  imagePullSecret: 'efsainnovationd4f4-auth'
+  
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -71,8 +71,6 @@ stages:
               action: deploy
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
-              imagePullSecrets: |
-                $(imagePullSecret)
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
