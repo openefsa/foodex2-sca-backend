@@ -65,7 +65,7 @@ spec:
           image: curlimages/curl
           command:
             - wget
-            - https://efsapublicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_11.3.1.zip
+            - https://publicmodels.blob.core.windows.net/efsapublicmodels/FOODEX/en_textcat_foodex2_11.3.1.zip
             - "-O"
             - "/usr/src/app/models/en_textcat_foodex2_11.3.1.zip"
           volumeMounts:
