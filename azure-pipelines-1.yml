@@ -13,7 +13,7 @@ variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'efsainnovation'
   imagePullSecret: 'efsainnovationd4f4-auth'
-  imageRepository: 'openefsafoodexscabackend'
+  imageRepository: 'openefsafoodexwebcomponentbackend'
   containerRegistry: 'efsainnovation.azurecr.io'
   dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildId)'
