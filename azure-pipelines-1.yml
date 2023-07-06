@@ -54,7 +54,7 @@ stages:
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: 'openefsafoodex2scabackend.foodex2'
+    environment: 'aks-innovation-foodex2'
     strategy:
       runOnce:
         deploy:
