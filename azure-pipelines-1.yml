@@ -70,6 +70,7 @@ stages:
             displayName: Deploy to Kubernetes cluster
             inputs:
               action: deploy
+              imagePullSecrets: ${imagePullSecret}
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
               containers: |
