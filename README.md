@@ -77,8 +77,8 @@ After making sure that the docker image has been correcly created, run it with t
 docker run name:tag
 ```
 
-## Kubernates deployment
-Deploy the docker image created on kubernates by using the files present under the *"/manifest"* folder by running the following command:
+## Kubernetes deployment
+Deploy the docker image created on kubernetes by using the files present under the *"/manifest"* folder by running the following command:
 ```
 kubectl deploy -f create ./manifest/deployment.yml
 ```
