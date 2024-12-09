@@ -4,7 +4,7 @@ azure-cosmosdb-table==1.0.6
 azure-nspkg==3.0.2
 blis==0.7.5
 catalogue==2.0.6
-certifi==2021.10.8
+certifi==2022.12.7
 cffi==1.15.0
 charset-normalizer==2.0.10
 click==7.1.2
